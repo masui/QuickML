@@ -1,0 +1,798 @@
+#! %RUBY%
+# -*- mode: ruby -*-
+#
+# quickml-analog - a tool to analyze quickml's log file.
+#
+# Copyright (C) 2002-2004 Satoru Takabayashi <satoru@namazu.org> 
+#     All rights reserved.
+#     This is free software with ABSOLUTELY NO WARRANTY.
+#
+# You can redistribute it and/or modify it under the terms of 
+# the GNU General Public License version 2.
+#
+
+require 'getoptlong'
+require 'ftools'
+require 'time'
+require 'cgi'
+
+class Array
+  def tail (n)
+    self[length - n, n]
+  end
+end
+
+class SimpleHtmlGenerator
+  def method_missing (symbol, *args)
+    element = symbol.to_s
+    if block_given?
+      if args.empty?
+        "<#{element}\n>" + yield + "</#{element}\n>"
+      else
+        "<#{element} " +
+          args.first.map {|key, value| 
+            sprintf('%s="%s"', key.to_s, CGI.escapeHTML(value.to_s))
+          }.join(" ") + 
+          "\n>" + yield +  "</#{element}\n>"
+      end
+    else
+      if args.empty?
+        "<#{element} /\n>"
+      else
+        "<#{element} " +
+          args.first.map {|key, value|
+            sprintf('%s="%s"', key.to_s, CGI.escapeHTML(value.to_s))
+          }.join(" ") + 
+          " /\n>"
+      end
+    end
+  end
+end
+
+module QuickMLStatFiles
+  def init_stat_file_names (output_dir)
+    @stat_ml_file         = File.join(output_dir, "stat.ml")
+    @stat_user_file       = File.join(output_dir, "stat.user")
+    @stat_submit_file     = File.join(output_dir, "stat.submit")
+    @stat_ktai_file       = File.join(output_dir, "stat.ktai")
+    @stat_mdist_file      = File.join(output_dir, "stat.mdist")
+    @stat_mdist2_file     = File.join(output_dir, "stat.mdist2")
+    @stat_ldist_file      = File.join(output_dir, "stat.ldist")
+    @stat_ldist2_file     = File.join(output_dir, "stat.ldist2")
+  end
+end
+
+class QuickMLStat
+  include QuickMLStatFiles
+
+  def initialize (log_file, cache_file, output_dir)
+    File.mkpath(output_dir)
+    @log_file   = log_file
+    @cache_file = cache_file
+    init_stat_file_names(output_dir)
+
+    @pos = 0
+    @ml_members = Hash.new
+    @stat_ml   = Hash.new
+    @closed_ml_stat = Hash.new
+    @created_ml_stat = Hash.new
+    @stat_submit = Hash.new
+    @stat_user = Hash.new
+    @stat_user_uniq = Hash.new
+    @stat_ktai = Hash.new
+    @stat_ktai[:all] = Hash.new
+
+    @stat_mdist = []
+    @stat_ldist = []
+    @created_time = Hash.new
+    
+    @ml_count = 0
+    @closed_ml_count = 0
+    @stat_submit_count = 0
+    @users_count = 0
+    @users_count_uniq = 0
+    @users_uniq_mark = Hash.new
+    @ktai_count = Hash.new
+    @ktai_count.default = 0
+  end
+
+  def parse_line (line)
+    if /^(\d\d(\d\d)-(\d\d)-(\d\d)T(\d\d)):\d\d:\d\d: (.*)/ =~ line 
+      time = Time.parse($1)
+      timestr =  $2 + $3 + $4 + $5
+      msg = $6
+      return time, timestr, msg
+    else
+      return nil, nil
+    end
+  end
+
+  def parse_msg (msg)
+    if /^\[(.*?)\]: (Add|Remove|New ML|ML Closed|Send)(?:: (.*))?/ =~ msg
+      return $1, $2, $3
+    else
+      return nil, nil, nil
+    end
+  end
+
+  def drop_hour (date)
+    /(\d\d\d\d\d\d)\d\d/ =~ date
+    return $1
+  end
+
+  def stat_of_ndays (stat, ndays)
+    the_day = Time.at(Time.now - 86400 * ndays).strftime("%y%m%d")
+    ndays_stat = Hash.new
+    stat.keys.sort.reverse.each {|date|
+      x = drop_hour(date)
+      if x > the_day
+	ndays_stat[date] = stat[date]
+      else
+	break
+      end
+    }
+    ndays_stat
+  end
+
+  def write_stat (filename, stat)
+    File.open(filename, "w") {|f|
+      stat.keys.sort.each {|date|
+	f.puts "#{date} #{stat[date]}"
+      }
+    }
+  end
+
+  def write_stat_ml
+    monthly_stat = stat_of_ndays(@stat_ml, 31)
+    weekly_stat =  stat_of_ndays(monthly_stat, 7)
+    write_stat(@stat_ml_file, @stat_ml)
+    write_stat(@stat_ml_file + ".month", monthly_stat)
+    write_stat(@stat_ml_file + ".week", weekly_stat)
+  end
+
+  def write_stat_ml_closed
+    monthly_stat = stat_of_ndays(@closed_ml_stat, 31)
+    weekly_stat =  stat_of_ndays(monthly_stat, 7)
+
+    write_stat(@stat_ml_file + ".closed", @closed_ml_stat)
+    write_stat(@stat_ml_file + ".month.closed", monthly_stat)
+    write_stat(@stat_ml_file + ".week.closed", weekly_stat)
+  end
+
+  def write_stat_ml_created
+    monthly_stat = stat_of_ndays(@created_ml_stat, 31)
+    weekly_stat =  stat_of_ndays(monthly_stat, 7)
+
+    write_stat(@stat_ml_file + ".created", @created_ml_stat)
+    write_stat(@stat_ml_file + ".month.created", monthly_stat)
+    write_stat(@stat_ml_file + ".week.created", weekly_stat)
+  end
+
+  def write_stat_user
+    monthly_stat = stat_of_ndays(@stat_user, 31)
+    weekly_stat =  stat_of_ndays(monthly_stat, 7)
+
+    write_stat(@stat_user_file, @stat_user)
+    write_stat(@stat_user_file + ".month", monthly_stat)
+    write_stat(@stat_user_file + ".week", weekly_stat)
+  end
+
+  def write_stat_user_uniq
+    monthly_stat = stat_of_ndays(@stat_user_uniq, 31)
+    weekly_stat =  stat_of_ndays(monthly_stat, 7)
+
+    write_stat(@stat_user_file + ".uniq", @stat_user_uniq)
+    write_stat(@stat_user_file + ".month.uniq", monthly_stat)
+    write_stat(@stat_user_file + ".week.uniq", weekly_stat)
+  end
+
+  def write_stat_submit
+    monthly_stat = stat_of_ndays(@stat_submit, 31)
+    weekly_stat =  stat_of_ndays(monthly_stat, 7)
+
+    write_stat(@stat_submit_file, @stat_submit)
+    write_stat(@stat_submit_file + ".month", monthly_stat)
+    write_stat(@stat_submit_file + ".week", weekly_stat)
+  end
+
+  def write_stat_ktai
+    [:docomo, :au, :vodafone, :tuka, :h, :all].each {|carrier|
+      next unless @stat_ktai[carrier]
+      monthly_stat = stat_of_ndays(@stat_ktai[carrier], 31)
+      weekly_stat =  stat_of_ndays(monthly_stat, 7)
+
+      write_stat(@stat_ktai_file + "." + carrier.to_s, 
+		 @stat_ktai[carrier])
+      write_stat(@stat_ktai_file  + ".month" + "." + carrier.to_s, 
+		 monthly_stat)
+      write_stat(@stat_ktai_file  + ".week"  + "." + carrier.to_s, 
+		 weekly_stat)
+    }
+  end
+
+  def update_stat_mdist (mlname, stat_mdist = @stat_mdist)
+    return if @ml_members[mlname].nil?
+    nmembers = @ml_members[mlname].length
+    stat_mdist[nmembers] = 0 if stat_mdist[nmembers].nil?
+    stat_mdist[nmembers] += 1
+  end
+
+  def write_stat_mdist
+    stat_mdist2 = []  # active ml only
+    @ml_members.keys.each {|mlname|
+      update_stat_mdist(mlname)
+      update_stat_mdist(mlname, stat_mdist2)
+    }
+
+    [ [@stat_mdist_file, @stat_mdist],
+      [@stat_mdist2_file, stat_mdist2]].each {|stat_mdist_file, stat_mdist|
+      File.open(stat_mdist_file, "w") {|f|
+        stat_mdist.each_with_index {|x, i|
+          next unless i >= 1 && i <= 100
+          if i and x
+            f.printf "%d	%d\n", i, x
+          end
+        }
+      }
+    }
+  end
+
+  def write_stat_ldist
+    f1 = File.open(@stat_ldist_file, "w")
+    f2 = File.open(@stat_ldist2_file, "w")
+
+    # To start X axis with one in ldist2, don't write it to f2.
+    f1.puts "0	0"
+    @stat_ldist.each_with_index {|x, i|
+      if i and x
+        f1.printf "%d	%d\n", i, x
+        f2.printf "%d	%d\n", i, x
+      end
+    }
+    f1.close
+    f2.close
+  end
+
+  def update_stat_ktai (address, x)
+    if /@docomo\.ne\.jp$/ =~ address
+      @ktai_count[:docomo] += x
+    elsif /[a-z]\d\.ezweb\.ne\.jp$/ =~ address
+      @ktai_count[:tuka] += x
+    elsif /@ezweb\.ne\.jp$/ =~ address
+      @ktai_count[:au] += x
+    elsif /@(jp-[a-z]\.ne\.jp|.\.vodafone\.ne\.jp)$/ =~ address
+      @ktai_count[:vodafone] += x
+    elsif /[.@]pdx\.ne\.jp$/ =~ address
+      @ktai_count[:h] += x
+    end
+  end
+
+  def add (mlname, address)
+    @ml_members[mlname] = [] if @ml_members[mlname].nil?
+    return if @ml_members[mlname].include?(address)
+    @ml_members[mlname].push(address)
+    @users_count += 1
+    if @users_uniq_mark[address]
+      @users_uniq_mark[address] += 1
+    else @users_uniq_mark[address].nil? or @users_uniq_mark[address] <= 0
+      @users_uniq_mark[address] = 1
+      @users_count_uniq += 1
+      update_stat_ktai(address, +1)
+    end
+  end
+
+  def remove (mlname, address)
+    @ml_members[mlname].delete(address) if @ml_members[mlname]
+    @users_count -= 1
+    return if @users_uniq_mark[address].nil?
+    @users_uniq_mark[address] -= 1 if @users_uniq_mark[address] > 0
+    if @users_uniq_mark[address] == 0
+      @users_count_uniq -= 1 
+      update_stat_ktai(address, -1)
+    end
+  end
+
+  def update_stat_ldist (mlname, time)
+    return if @ml_members[mlname].nil?
+    return if @created_time[mlname].nil?
+    ndays = ((time - @created_time[mlname]) / 86400).to_i
+    nmonths = ndays / 32 + 1
+    @stat_ldist[nmonths] = 0 if @stat_ldist[nmonths].nil?
+    @stat_ldist[nmonths] += 1
+  end
+
+  def update_stat (time, timestr, mlname, command, address)
+    case command
+    when "Add"
+      add(mlname, address)
+    when "Remove"
+      remove(mlname, address)
+    when "New ML"
+      @ml_members[mlname] = []
+      @ml_count += 1
+      @created_time[mlname] = time
+    when "ML Closed"
+      update_stat_mdist(mlname)
+      update_stat_ldist(mlname, time)
+      if @ml_members[mlname]
+	@ml_members[mlname].each {|address| remove(mlname, address) }
+      end
+      @ml_members.delete(mlname)
+      @ml_count -= 1
+      @closed_ml_count += 1
+    when "Send"
+      @stat_submit_count += 1
+      @stat_submit[timestr] = @stat_submit_count
+    end
+    @stat_user[timestr] = @users_count
+    @stat_user_uniq[timestr] = @users_count_uniq
+    @stat_ml[timestr] = @ml_count
+    @closed_ml_stat[timestr] = @closed_ml_count
+    @created_ml_stat[timestr] = @stat_ml[timestr] + @closed_ml_stat[timestr]
+    ktai_all = 0
+    [:docomo, :au, :vodafone, :tuka, :h].each {|carrier|
+      @stat_ktai[carrier] = Hash.new unless @stat_ktai[carrier]
+      @stat_ktai[carrier][timestr] = @ktai_count[carrier]
+      ktai_all += @ktai_count[carrier]
+    }
+    @stat_ktai[:all][timestr] = ktai_all
+  end
+
+  def dump
+    Marshal::dump(self, File.open(@cache_file, "w"))
+  end
+
+  def refresh (log_file, cache_file, output_dir)
+    @log_file   = log_file
+    @cache_file = cache_file
+    init_stat_file_names(output_dir)
+  end
+
+  def process
+    STDERR.puts "Analyzing the log file..."
+    f = File.new(@log_file)
+    f.seek(@pos)
+    prev = nil
+    while line = f.gets
+      time, timestr, msg, address = parse_line(line)
+      if timestr and msg
+        STDERR.puts time if prev and prev.day < time.day
+        prev = time
+	mlname, command, address = parse_msg(msg)
+	if mlname and command
+	  update_stat(time, timestr, mlname, command, address)
+	end
+      end
+    end
+    STDERR.puts "Writing statistics files..."
+    write_stat_ml
+    write_stat_ml_closed
+    write_stat_ml_created
+    write_stat_user
+    write_stat_user_uniq
+    write_stat_submit
+    write_stat_ktai
+    write_stat_mdist
+    write_stat_ldist
+    @pos = f.pos
+    dump
+  end
+end
+
+class QuickMLPlot
+  include QuickMLStatFiles
+
+  def initialize (output_dir, generate_png_p)
+    @output_dir = output_dir
+    @generate_png_p = generate_png_p
+    init_stat_file_names(output_dir)
+    @gnuplot_file = File.join(output_dir, "quickml-analog.gp")
+    property = Struct.new("Property", 
+                          :size, :font_size, :infix, :format, :xlabel)
+    @large = property.new(2.40, 40, "",   "%y/%m", nil)
+    @small = property.new(0.72, 20, ".s", "%m",    nil)
+    @languages = [:en, :ja]
+  end
+
+  def add_basic (f)
+    f.print '
+    set grid
+    set timefmt "%y%m%d%H"
+    set xdata time
+    set size ratio 0.76
+    set linestyle 1 linetype 1 linewidth 5
+    set linestyle 2 linetype 3 linewidth 5
+    set linestyle 3 linetype 2 linewidth 5
+    set linestyle 4 linetype 4 linewidth 5
+    set linestyle 5 linetype 5 linewidth 5
+    set linestyle 6 linetype 7 linewidth 5
+
+    '.gsub(/^    /, "")
+  end
+
+  def add_chart (f, default, lang, chart_prefix, stat_files, type, 
+                 options = {})
+
+    stat_files.each {|file, title|
+      file = File.join(@output_dir, file)
+      return unless File.exists?(file)
+      return if File.size(file) == 0
+    }
+
+    f.printf(%Q(set size %f\n), default.size) unless options[:size]
+    f.printf(%Q(set terminal postscript eps color "Helvetica" %d\n), 
+             default.font_size) unless options[:font_size]
+    f.printf(%Q(set format x "%s"\n), default.format) unless options[:format]
+
+    options.each {|key, value|
+      if value.kind_of?(String)
+        f.printf(%Q(set %s "%s"\n), key.to_s, value)
+      elsif value.kind_of?(Integer)
+        f.printf(%Q(set %s %d\n), key.to_s, value)
+      elsif value.kind_of?(Symbol)
+        f.printf(%Q(set %s %s\n), key.to_s, value.to_s)
+      elsif value == nil
+        f.printf(%Q(set %s\n), key.to_s)
+      end
+    }
+
+    f.printf(%Q(set output "%s/%s%s.eps"\n), 
+             lang, chart_prefix, default.infix)
+
+    f.printf("plot ")
+    i = 0
+    f.print stat_files.map {|file, title|
+      i += 1
+      sprintf(%Q("%s" using 1:2 title "%s" with %s ls %d), 
+              file, title, type, i)
+    }.join(",\\\n     ") + "\n"
+    f.puts
+  end
+
+  def add_stat_common (f, chart_prefix, infix, stat_files_table, title_table)
+    small = @small.clone
+    large = @large.clone
+
+    xlabel_table = Hash.new
+    xlabel_table[:md] = { :en => "Month/Day", :ja => "月/日" }
+    xlabel_table[:d] = { :en => "Day", :ja => "日" }
+    xlabel_table[:m] = { :en => "Month", :ja => "月" }
+    xlabel_table[:ym] = { :en => "Year/Month", :ja => "年/月" }
+    [:en, :ja].each {|lang|
+      if infix == ".month"
+        small.format = large.format = "%m/%d"
+        small.xlabel = large.xlabel = xlabel_table[:md][lang]
+      elsif infix == ".week"
+        small.format = "%d"
+        large.format = "%m/%d"
+        small.xlabel = xlabel_table[:d][lang]
+        large.xlabel = xlabel_table[:md][lang]
+      else
+        small.format = "%m"
+        large.format = "%y/%m"
+        small.xlabel = xlabel_table[:m][lang]
+        large.xlabel = xlabel_table[:ym][lang]
+      end
+
+      stat_files = stat_files_table[lang]
+      [small, large].each {|default|
+        add_chart(f, default, lang, chart_prefix, stat_files, "lines",
+                  :title => title_table[lang],
+                  :xlabel => default.xlabel)
+      }
+    }
+  end
+
+  def add_stat_ml (f)
+    ["", ".month", ".week"].each {|infix|
+      basename = File.basename(@stat_ml_file)
+      title_table = {
+        :en => "Number of Mailing Lists",
+        :ja => "メーリングリストの数"
+      }
+      stat_files_table = {
+        :en => [
+          ["#{basename}#{infix}.created",  "Created ML"],
+          ["#{basename}#{infix}",          "Active ML"],
+          ["#{basename}#{infix}.closed",   "Closed ML"]],
+        :ja => [
+          ["#{basename}#{infix}.created",  "開設ML"],
+          ["#{basename}#{infix}",          "活発ML"],
+          ["#{basename}#{infix}.closed",   "閉鎖ML"]]
+      }
+      add_stat_common(f, "#{basename}#{infix}",
+                      infix, stat_files_table, title_table)
+    }
+  end
+
+  def add_stat_user (f)
+    ["", ".month", ".week"].each {|infix|
+      basename = File.basename(@stat_user_file)
+      title_table = {
+        :en => "Number of Users",
+        :ja => "ユーザ数"
+      }
+      stat_files_table = {
+        :en => [
+          ["#{basename}#{infix}",      "Number of users"],
+          ["#{basename}#{infix}.uniq", "Number of users (unique)"]],
+        :ja => [
+          ["#{basename}#{infix}",      "ユーザ"],
+          ["#{basename}#{infix}.uniq", "重複なしユーザ"]]
+      }
+      add_stat_common(f, "#{basename}#{infix}", 
+                      infix, stat_files_table, title_table)
+    }
+  end
+
+  def add_stat_ktai (f)
+    ["", ".month", ".week"].each {|infix|
+      basename = File.basename(@stat_ktai_file)
+      title_table = {
+        :en => "Number of Mobile Phone Users",
+        :ja => "携帯電話のユーザ数"
+      }
+      stat_files_table = {
+        :en => [
+          ["#{basename}#{infix}.docomo",      "DoCoMo"],
+          ["#{basename}#{infix}.vodafone",    "vodafone"],
+          ["#{basename}#{infix}.au",          "au"],
+          ["#{basename}#{infix}.h",           "DDI POCKET"],
+          ["#{basename}#{infix}.tuka",        "TUKA"],
+          ["#{basename}#{infix}.all",         "Mobile phones (total)"]],
+        :ja => [
+          ["#{basename}#{infix}.docomo",      "DoCoMo"],
+          ["#{basename}#{infix}.vodafone",    "vodafone"],
+          ["#{basename}#{infix}.au",          "au"],
+          ["#{basename}#{infix}.h",           "DDI POCKET"],
+          ["#{basename}#{infix}.tuka",        "TUKA"],
+          ["#{basename}#{infix}.all",         "携帯電話(合計)"]]
+      }
+      add_stat_common(f, "#{basename}#{infix}", 
+                      infix, stat_files_table, title_table)
+    }
+  end
+
+  def add_stat_submit (f)
+    ["", ".month", ".week"].each {|infix|
+      basename = File.basename(@stat_submit_file)
+      title_table = {
+        :en => "Number of Submissions",
+        :ja => "投稿数"
+      }
+      stat_files_table = {
+        :en => [
+          ["#{basename}#{infix}",      "Number of submissions"]],
+        :ja => [
+          ["#{basename}#{infix}",      "投稿数"]],
+      }
+      add_stat_common(f, "#{basename}#{infix}", 
+                      infix, stat_files_table, title_table)
+    }
+  end
+
+  def add_stat_ldist (f)
+    [ @stat_ldist_file, @stat_ldist2_file].each {|stat_file|
+      basename = File.basename(stat_file)
+      stat_files = [[basename, ""]]
+
+      title_table = {
+        :en => "Distribution of Lifetime of Mailing Lists",
+        :ja => "寿命の分布"
+      }
+      ylabel_table = {
+        :en => "Number of mailing lists",
+        :ja => "メーリングリスト数"
+      }
+      xlabel_table = {
+        :en => "ML lifetime (months)",
+        :ja => "寿命 (月)"
+      }
+
+      xtics_table = {:large => 1, :small => 5}
+
+      if basename == "stat.ldist" 
+        type = "boxes"
+        logscale_p = false
+      else
+        type = "lines"
+        logscale_p = true
+      end
+      [:en, :ja].each {|lang|
+        [:small, :large].each {|size|
+          default = if size == :large then @large else @small end
+          options = {
+            :title => title_table[lang],
+            :xtics => xtics_table[size],
+            :xdata => nil,
+            "format x".intern => nil,
+            :ylabel => ylabel_table[lang],
+            :xlabel => xlabel_table[lang]
+          }
+          options[:logscale] = :y if logscale_p
+          add_chart(f, default, lang, basename, stat_files, type, options)
+        }
+      }
+    }
+  end
+
+  def add_stat_mdist (f)
+    [@stat_mdist_file, @stat_mdist2_file].each {|stat_file|
+      basename = File.basename(stat_file)
+      stat_files = [[basename, ""]]
+      title_table = {
+        :en => "Distribution of Number of Members",
+        :ja => "メンバー数の分布"
+      }
+      ylabel_table = {
+        :en => "Number of mailing lists",
+        :ja => "メーリングリスト数"
+      }
+      xlabel_table = {
+        :en => "Number of members",
+        :ja => "メンバー数"
+      }
+
+      type = "boxes"
+      [:en, :ja].each {|lang|
+        [:small, :large].each {|size|
+          default = if size == :large then @large else @small end
+          options = {
+            :nologscale => nil,  # to cancel the setting set before
+            :title => title_table[lang],
+            :xtics => 10,
+            :xdata => nil,
+            "format x".intern => nil,
+            :ylabel => ylabel_table[lang],
+            :xlabel => xlabel_table[lang]
+          }
+          add_chart(f, default, lang, basename, stat_files, type, options)
+        }
+      }
+    }
+  end
+
+  def image_link (g, image_prefix)
+    g.a(:href => image_prefix + ".png") {
+      g.img(:src => image_prefix + ".s.png", :alt=> "[chart]")
+    }
+  end
+
+  def generate_index_html
+    title = "QuickML Log Analysis"
+
+    g = SimpleHtmlGenerator.new
+    g.html {
+      g.head {
+        g.title { title }
+      } + g.body {
+        g.h1 { title } + g.hr +
+        g.h2 { "Number of Mailing Lists" } +
+        g.p {
+          ["", ".month", ".week"].map {|infix|
+            image_prefix = File.basename(@stat_ml_file + infix)
+            image_link(g, image_prefix)
+          }.join('')
+        } +
+        g.h2 { "Number of Users" } +
+        g.p {
+          ["", ".month", ".week"].map {|infix|
+            image_prefix = File.basename(@stat_user_file + infix)
+            image_link(g, image_prefix)
+          }.join('')
+        } +
+        g.h2 { "Number of Mobile Phone Users" } +
+        g.p {
+          ["", ".month", ".week"].map {|infix|
+            image_prefix = File.basename(@stat_ktai_file + infix)
+            image_link(g, image_prefix)
+          }.join('')
+        } +
+        g.h2 { "Number of Submissions" } +
+        g.p {
+          ["", ".month", ".week"].map {|infix|
+            image_prefix = File.basename(@stat_submit_file + infix)
+            image_link(g, image_prefix)
+          }.join('')
+        } + 
+        g.h2 { "Lifetime of Mailing Lists" } +
+        g.p {
+          image_prefix1 = File.basename(@stat_ldist_file)
+          image_prefix2 = File.basename(@stat_ldist2_file)
+          image_link(g, image_prefix1) +
+          image_link(g, image_prefix2)
+        } +
+        g.h2 { "Distribution of Number of Members" } +
+        g.p {
+          image_prefix1 = File.basename(@stat_mdist_file)
+          image_prefix2 = File.basename(@stat_mdist2_file)
+          image_link(g, image_prefix1) +
+          image_link(g, image_prefix2)
+        } + g.hr +
+        g.p { "Generated on " + Time.now.to_s }
+      }
+    }
+  end
+
+  def process
+    @languages.each {|lang|
+      File.mkpath(File.join(@output_dir, lang.to_s))
+    }
+
+    STDERR.puts "Generating a gnuplot script..."
+    File.open(@gnuplot_file, "w") {|f|
+      add_basic(f)
+      add_stat_ml(f)
+      add_stat_user(f)
+      add_stat_ktai(f)
+      add_stat_submit(f)
+      add_stat_ldist(f)
+      add_stat_mdist(f)
+    }
+
+    STDERR.puts "Generating EPS files using gnuplot..."
+    Dir.chdir(@output_dir)
+    file = File.basename(@gnuplot_file)
+    system("gnuplot #{file}")
+ 
+    if @generate_png_p
+      html = generate_index_html
+      @languages.each {|lang|
+        STDERR.puts "Generating PNG files using ImageMagick for #{lang}..."
+        Dir.chdir(lang.to_s)
+        system("for i in *.eps; do convert $i `basename $i .eps`.png; done")
+        File.new("index.html", "w").write(html)
+        Dir.chdir("..")
+      }
+    end
+  end
+end
+
+def show_help
+  puts "Usage: quickml-analog [OPTION...] FILE"
+  puts "  -o, --output-dir=DIR   output files to DIR"
+  puts "  -g, --gnuplot          draw charts in EPS using gnuplot"
+  puts "  -i, --imagemagick      generate charts in PNG using ImageMagick"
+  puts "  -f, --force            force analyzing (don't reuse cache data)"
+  exit
+end
+
+def parse_options
+  options = Hash.new
+  parser = GetoptLong.new
+  parser.set_options(['--output-dir',    '-o', GetoptLong::REQUIRED_ARGUMENT],
+                     ['--gnuplot',       '-g', GetoptLong::NO_ARGUMENT],
+                     ['--help',          '-h', GetoptLong::NO_ARGUMENT],
+                     ['--imagemagick',   '-i', GetoptLong::NO_ARGUMENT],
+                     ['--force',         '-f', GetoptLong::NO_ARGUMENT])
+  parser.each_option {|name, arg|
+    name.sub!(/^--/, "")
+    options[name] = arg
+  }
+  return options
+end
+
+def main
+  options = parse_options
+  output_dir = (options['output-dir'] or ".")
+  show_help if ARGV.empty? or options['help']
+
+  log_file = ARGV.first
+
+  cache_file = File.join(output_dir, "quickml-analog.dump")
+  if File.exist?(cache_file) and !options['force']
+    STDERR.puts "Loading the cache file..."
+    stat = Marshal::load(File.new(cache_file))
+    stat.refresh(log_file, cache_file, output_dir)
+  else
+    stat = QuickMLStat.new(log_file, cache_file, output_dir)
+  end
+  stat.process
+
+  if options['gnuplot'] or options['imagemagick']
+    plot = QuickMLPlot.new(output_dir, options['imagemagick'])
+    plot.process
+  end
+end
+
+main

@@ -1,0 +1,19 @@
+What's quickml:
+
+  quickml server is a very-easy-to-user mailing list server.
+
+Installation:
+
+  % make
+  # make install
+
+Usage:
+
+  # quickml-ctl start
+  # quickml-ctl stop
+
+See quickml.*.html for details.
+
+--
+Satoru Takabayashi
+satoru@namazu.org

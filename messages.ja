@@ -1,0 +1,99 @@
+# -*- mode: ruby -*-
+Messages = {
+  "<%s> was removed from the mailing list:\n<%s>\n" =>
+  "<%s> は\nメーリングリスト <%s> から削除されました。\n",
+
+  "because the address was unreachable.\n" =>
+  "メールが届かないためです。\n",
+
+  "ML will be closed if no article is posted for %d days.\n\n" =>
+  "このメーリングリストは %d日以内に投稿がないと消滅します。\n\n",
+
+  "Time to close: %s.\n\n" =>
+  "消滅予定日時: %s\n\n",
+
+  "%Y-%m-%d %H:%M" =>
+  "%Y年%m月%d日 %H時%M分",
+
+  "You are not a member of the mailing list:\n<%s>\n" =>
+  "あなたは <%s> メーリングリストのメンバーではありません。\n",
+
+  "You are removed from the mailing list:\n<%s>\n" =>
+  "あなたは <%s> メーリングリストから削除されました。\n",
+
+  "by the request of <%s>.\n" =>
+  "<%s> が削除をお願いしたためです。\n",
+
+  "You have unsubscribed from the mailing list:\n<%s>.\n" =>
+  "あなたは <%s> メーリングリストから退会しました。",
+
+  "The following addresses cannot be added because <%s> mailing list reaches the max number of members (%d persons)\n\n" =>
+  "<%s> メーリングリストはメンバーの最大人数 (%d人)\nに達したので以下のアドレスは追加できませんでした。\n\n",
+
+  "Invalid mailing list name: <%s>\n" =>
+  "<%s> は正しくないメーリングリスト名です。\n",
+
+  "You can only use 0-9, a-z, A-Z,  `.',  `-', and `_' for mailing list name\n" =>
+  "メーリングリスト名には 0-9, a-z, A-Z, 「.」「-」「_」だけが使えます。\n",
+
+  "Sorry, your mail exceeds the limitation of the length.\n" =>
+  "申し訳ありません。あなたのメールのサイズは制限を超えました。\n",
+
+  "The max length is %s bytes.\n\n" =>
+  "メールのサイズの制限は %s バイトです。\n\n",
+
+  "[%s] Unsubscribe: %s" =>
+  "[%s] 退会: %s",
+
+  "[%s] ML will be closed soon" =>
+  "[%s] メーリングリスト停止のご案内",
+
+  "[%s] Removed: <%s>" =>
+  "[%s] メンバー削除: <%s>",
+
+  "Members of <%s>:\n" =>
+  "<%s> のメンバー:\n",
+
+  "How to unsubscribe from the ML:\n" =>
+  "このMLを退会する方法:\n",
+
+  "- Just send an empty message to <%s>.\n" =>
+  "- 本文が空のメールを <%s> に送ってください\n",
+
+  "- Or, if you cannot send an empty message for some reason,\n" =>
+  "- 本文が空のメールを送れない場合は、\n",
+
+  "  please send a message just saying 'unsubscribe' to <%s>.\n" =>
+  "  本文に「退会」とだけ書いたメールを <%s> に送ってください\n",
+
+  "  (e.g., hotmail's advertisement, signature, etc.)\n" =>
+  "  (署名やhotmailの広告などがついて空メールを送れない場合など)\n",
+
+  "[QuickML] Error: %s" =>
+  "[QuickML] エラー: %s",
+
+  "New Member: %s\n" =>
+  "新メンバー: %s\n",
+
+  "Did you send a mail with a different address from the address registered in the mailing list?\n" =>
+  "メーリングリストに登録したメールアドレスと異なるアドレスからメールを送信していませんか?\n",
+
+  "Please check your 'From:' address.\n" =>
+  "差出人のメールアドレスを確認してください。\n",
+
+  "Info: %s\n" => 
+  "使い方: %s\n",
+
+  "----- Original Message -----\n" =>
+  "----- 元のメッセージ -----\n",
+
+  "[%s] Confirmation: %s" =>
+  "[%s] 確認: %s",
+
+  "Please simply reply this mail to create ML <%s>.\n" =>
+  "このメールに返信すると <%s> メーリングリストが作られます。\n",
+}
+
+Charset = "iso-2022-jp"
+CodeconvMethod = :tojis
+

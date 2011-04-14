@@ -1,0 +1,3 @@
+module QuickML
+  VERSION =  "%VERSION%"
+end

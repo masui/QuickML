@@ -1,0 +1,1261 @@
+2004-06-09  Satoru Takabayashi  <satoru@namazu.org>
+
+ 	* quickml: Version 0.7 released.
+
+	* lib/quickml/core.rb (QuickML::QuickML::plain_text_body?): Add
+	a check for Content-Transfer-Encoding field. Reported by Kazuhiro
+	NISHIYAMA <zn@mbf.nifty.com> [quickml-server:155]
+
+2004-06-08  Satoru Takabayashi  <satoru@namazu.org>
+
+	* lib/quickml/core.rb
+	(QuickML::Processor::report_too_many_members): Fixed "undefined
+	local variable or method `address'" error.
+
+2004-05-17  Satoru Takabayashi  <satoru@namazu.org>
+
+	* Makefile.am (update-web): Removed.
+	(html): New rule.
+
+2004-04-01  Satoru Takabayashi  <satoru@namazu.org>
+
+	* Makefile.am (install-data-local): Added mkdir -p
+	$(quickmlstatedir). Reported by Tatsuhiko Miyagawa
+	<miyagawa@livedoor.jp> 
+
+2004-03-28  Satoru Takabayashi  <satoru@namazu.org>
+
+	* Makefile.am (quickml): Removed the "check-message" rule and
+	integrated it into "quickml" rule. Applied a patch from Fumitoshi
+	UKAI <ukai@debian.or.jp> [quickml-server:149].
+
+2004-03-27  Satoru Takabayashi  <satoru@namazu.org>
+
+	* lib/quickml/utils.rb (File::safe_unlink): Removed.
+
+2004-03-22  Satoru Takabayashi  <satoru@namazu.org>
+
+	* lib/quickml/core.rb: Applied a patch by MACHIDA Hideki <h@matchy.net>
+	[quickml-server:143] to use @config.info_url in the X-ML-Info field.
+
+	* configure.ac: Applied a patch by MACHIDA Hideki <h@matchy.net>
+	[quickml-server:142] to fix the --with-pidfile and --with-logfile
+	bug.  
+
+2004-03-06  Satoru Takabayashi  <satoru@namazu.org>
+
+	* configure.ac (AM_INIT_AUTOMAKE): Bumped version number to 0.7.
+
+2004-02-11  Satoru Takabayashi  <satoru@namazu.org>
+
+ 	* quickml: Version 0.6 released.
+
+2004-02-10  Satoru Takabayashi  <satoru@namazu.org>
+
+	* acinclude.m4: New file.
+
+	* configure.ac: New file.
+
+	* NEWS: NEW file.
+
+	* AUTHORS: New file.
+
+	* lib/quickml/Makefile.am: New file.
+
+	* lib/Makefile.am: New file.
+
+	* Makefile.am: New file.
+
+	* autogen.sh: New file.
+
+	* lib/quickml/utils.rb (File::backup_dir): Removed.
+	(DupFile): Removed.
+	(File::safe_open): Simplified.
+
+	* lib/quickml/config.rb (QuickML::Config::initialize): Removed
+	a field: @backup_dir. 
+
+2004-02-04  Satoru Takabayashi  <satoru@namazu.org>
+
+	* Makefile (quickml-analog): New rule.
+
+	* quickml-analog.in: New file.
+
+	* QuickML: Modify the year of copyright notice in all files.
+
+2004-01-28  Satoru Takabayashi  <satoru@namazu.org>
+
+	* lib/quickml/gettext.rb (main): Remove the unnecesary GetText::
+	prefix for avoiding an error occurred with Ruby 1.8.x. Reported by 
+	Kenshi Muto <kmuto@topstudio.co.jp>
+
+2003-12-22  Satoru Takabayashi  <satoru@namazu.org>
+
+	* quickml.in (be_daemon): Reopen STDIN/STDOUT/STDERR with
+	/dev/null instead of closing them.
+
+2003-09-12  Satoru Takabayashi  <satoru@namazu.org>
+
+	* lib/quickml/config.rb (QuickML::Config::initialize): New field:
+	@max_ml_mail_length.
+
+	* lib/quickml/core.rb (QuickML::QuickML::init_ml_config): Use
+	@config.max_ml_mail_length.
+
+2003-09-09  Satoru Takabayashi  <satoru@namazu.org>
+
+	* quickml (be_daemon): Moved from QuickML::Server.
+	(touch): Ditto.
+	(be_secure): Ditto.
+	(main): Call be_daemon and be_secure in the method.
+
+	* lib/quickml/config.rb (QuickML::Config::self): Refined.
+
+	* lib/quickml/server.rb (QuickML::Server::start): Fix @my_hostname
+	bug. Thanks to Fumitoshi UKAI <ukai@debian.or.jp> for the report
+	[quickml-server:120] 
+	(QuickML::Server::start): Never call be_daemon and be_secure in
+	the method.
+
+	* lib/quickml/core.rb (QuickML::QuickML::initialize): Remove
+	attr_reader:  confirmation_address.
+	(QuickML::Processor::process_recipient): Fix the space before
+	lparen.	Thanks to Fumitoshi UKAI <ukai@debian.or.jp> for the report
+	[quickml-server:120] 	
+
+2003-09-08  Satoru Takabayashi  <satoru@namazu.org>
+
+	* lib/quickml/core.rb (QuickML::Processor::report_rejection):
+	Change the From: address: @config.postmaster -> ml.address.
+	(QuickML::Processor::report_too_many_members): Ditto.
+
+2003-08-28  Satoru Takabayashi  <satoru@namazu.org>
+
+	* lib/quickml/core.rb (QuickML::Processor::submit): Do nothing
+	if From: address matches ml.exclude? rule.
+	(QuickML::QuickML::exclude?): Be public.
+
+2003-08-27  Satoru Takabayashi  <satoru@namazu.org>
+
+	* lib/quickml/core.rb (QuickML::QuickML::close): Unlink @ml_config_file.
+
+2003-08-25  Satoru Takabayashi  <satoru@namazu.org>
+
+	* lib/quickml/server.rb (QuickML::Session::content_type): New method.
+
+	* lib/quickml/core.rb (QuickML::QuickML::report_too_large_mail):
+	New method.
+	(QuickML::QuickML::submit): Check @max_mail_length.
+	(QuickML::QuickML::content_type): Use @message_charset instead of
+	@charset.
+	(QuickML::Processor::report_unsubscription): Use content_type.
+	(QuickML::Processor::content_type): New method.
+
+	* lib/quickml/utils.rb (Integer::commify): New method.
+
+	* lib/quickml/server.rb (QuickML::Session::report_too_large_mail):
+	Fix the Content-Type bug.
+	(QuickML::Session::commify): Removed.
+
+	* lib/quickml/core.rb
+	(QuickML::Processor::report_too_many_members): Fix the
+	Content-Type bug.
+	(QuickML::QuickML::too_many_members?): Renamed from too_many_users.
+	(QuickML::QuickML::initialize): New reader :max_members.
+	(QuickML::Processor::report_too_many_members): New parameter
+	unadded_addresses.
+	(QuickML::Processor::submit_article): Send an error mail to
+	from_address with unadded_addresses info.
+	(QuickML::Processor::report_too_many_members): Messages refined.
+
+	* lib/quickml/sweeper.rb (QuickML::Sweeper::sweep): Call
+	QuickML#write_ml_config if ml_config_file doesn't exist.
+	(QuickML::Sweeper::start): Add a vlog message.
+
+	* lib/quickml/core.rb (QuickML::QuickML::ml_config_exist?): New method.
+
+	* lib/quickml/mail.rb (QuickML::Mail::read): Use Regexp instead of
+	String to do String#split. 
+
+	* lib/quickml/server.rb (QuickML::Session::receive_mail): Use
+	Regexp instead of String to do String#split.
+
+	* lib/quickml/config.rb (QuickML::Config::initialize): Use class
+	instead of type.
+
+	* lib/quickml/utils.rb (File::initialize): Removed.
+
+	* lib/quickml/config.rb (QuickML::Config::load): Simplified.
+
+	* lib/quickml/core.rb (QuickML::QuickML::init_ml_config): New method.
+	(QuickML::QuickML::write_ml_config): Ditto.
+	(QuickML::QuickML::initialize): New field: @ml_config_file.
+	(QuickML::QuickML::too_many_users?): Use @max_members.
+	(QuickML::QuickML::report_ml_close_soon): Use @ml_life_time.
+	(QuickML::QuickML::inactive?): Ditto.
+	(QuickML::QuickML::need_alert?): Use @ml_alert_time.
+	(QuickML::QuickML::add_error_member): Use @auto_unsubscribe_count.
+
+	* quickmlrc.sample: Rearrange the order of parameters.
+
+2003-06-25  Satoru Takabayashi  <satoru@namazu.org>
+
+	* lib/quickml/core.rb (QuickML::QuickML::remove_alertedp_file): New
+	method. 
+	(QuickML::QuickML::_submit): Call remove_alertedp_file to fix the
+	bug that removes ML without alert a mail if onece it was alerted.
+	Thanks to OTA Takashi <t00156to@sfc.keio.ac.jp> for the report
+	[quickml-users:488].
+
+2003-05-12  Satoru Takabayashi  <satoru@namazu.org>
+
+	* lib/quickml/utils.rb (File::self): unlink a backup file too.
+	(File::initialize): Call safe_open.
+
+	* lib/quickml/core.rb (QuickML::QuickML::generate_footer): Add an
+	new parameter: member_list_p
+	(QuickML::QuickML::report_removed_member): Add a member list to
+	the footer.
+	(QuickML::QuickML::report_ml_close_soon): Ditto.
+	(QuickML::QuickML::alerted): New method.
+	(QuickML::QuickML::need_alert): Use alerted.
+	(QuickML::QuickML::initialize): New field: @alertedp_file.
+	(QuickML::QuickML::report_ml_close_soon): Create @alertedp_file.
+	(QuickML::QuickML::close): Remove @alertedp_file.
+
+2003-05-05  Satoru Takabayashi  <satoru@namazu.org>
+
+	* lib/quickml/core.rb (QuickML::Processor::unsubscribe_requested):
+	Fixe the regex to support ВаІс|Г¦Ва. [quickml-users:394]
+	(QuickML::QuickML::generate_header): Use obfuscate_address.
+
+2003-04-24  Satoru Takabayashi  <satoru@namazu.org>
+
+	* lib/quickml/server.rb (QuickML::Server::be_secure): Use
+	Etc::getgrnam instead of Etc::getpwnam.
+	- Thanks to Masayoshi Sekimura <sekimura@iij-mc.co.jp> for the patch.
+
+2003-04-17  Satoru Takabayashi  <satoru@namazu.org>
+
+	* lib/quickml/config.rb (QuickML::Config::initialize): New field:
+	confirm_ml_creation.
+
+	* lib/quickml/core.rb
+	(QuickML::Processor::confirmation_required?): New method.
+
+2003-04-16  Satoru Takabayashi  <satoru@namazu.org>
+
+	* lib/quickml/config.rb (QuickML::Config::initialize): Add
+	config[:backup_dir] handling.
+
+	* lib/quickml/logger.rb (QuickML::Logger::reopen): Use File.safe_open.
+	(QuickML::Logger::initialize): Ditto.
+
+	* lib/quickml/utils.rb (DupFile): New class.
+	(File::self.safe_open): Use DupFile if @backup_dir is set.
+	(File::self.backup_dir=): New method.
+
+2003-04-11  Satoru Takabayashi  <satoru@namazu.org>
+
+	* lib/quickml/core.rb
+	(QuickML::Processor::acceptable_submission?): newly created ML is
+	not acceptable any longer.
+	(QuickML::QuickML::initialize): New field: @waiting_members_file.
+	(QuickML::QuickML::initialize): New field: @waiting_body_file.
+	(QuickML::QuickML::close): Remove @waiting_file.
+	(QuickML::QuickML::confirmation_waiting?): New method.
+	(QuickML::QuickML::initialize): New field: confirmation_address
+	(QuickML::Processor::validate_confirmation): New method.
+	(QuickML::Processor::to_confirmation_address?): New method.
+	(QuickML::QuickML::validate_confirmation): New method.
+	(QuickML::QuickML::initialize) 
+	(QuickML::QuickML::accept_confirmation): New method.
+	(QuickML::QuickML::prepare_confirmation): New method.
+	(QuickML::QuickML::save_charset): Do not save charset file if
+	@messasge_charset is nil.
+
+	* lib/quickml/mail.rb (QuickML::Mail::initialize): New field: bare
+
+2003-04-07  Satoru Takabayashi  <satoru@namazu.org>
+
+	* lib/quickml/sweeper.rb (QuickML::Sweeper::sweep): Do not pass
+	@messasge_charset to QuickML.new
+	- To fix the bug reported in [quickml-users:387]
+
+2003-03-22  Satoru Takabayashi  <satoru@namazu.org>
+
+	* Makefile (ALL): Change the order of check-message to the last.
+
+2003-02-05  Satoru Takabayashi  <satoru@namazu.org>
+
+	* lib/quickml/mail.rb (QuickML::Mail::send_mail): Add an assertion
+	for ensuring optional[:recipient] must be a kind of String.
+
+	* lib/quickml/core.rb (QuickML::QuickML::report_removed_member):
+	s/:recipient/:recipients/ 
+	(QuickML::QuickML::report_ml_close_soon): Ditto.
+	(QuickML::Processor::report_unsubscription): Ditto. 
+
+2003-01-18  Satoru Takabayashi  <satoru@namazu.org>
+
+	* lib/quickml/mail.rb (QuickML::MailSender::send): Fix a type of
+	String#sub! argument.
+	- Thanks to Kazuhiro NISHIYAMA <zn@mbf.nifty.com> for the suggestion.
+
+2003-01-17  Satoru Takabayashi  <satoru@namazu.org>
+
+	* lib/quickml/utils.rb (Net::NetPrivate::SMTPCommand): Removed.
+
+	* lib/quickml/mail.rb (QuickML::Mail::send_mail): Use MailSender
+	instead of Net::SMTP.
+
+	* lib/quickml/server.rb (QuickML::Session::report_too_large_mail): 
+	Change the recipient address: @mail.envelope_from => @mail.from
+
+	* lib/quickml/mail.rb (QuickML::MailSender): New class.
+
+	* lib/quickml/core.rb
+	(QuickML::Processor::unsubscribe_requested?): Accept unsubscribe
+	commands such as unsubscribe, bye, quit, etc.
+	(QuickML::QuickML::member_added?): Renamed from with_member_list?
+	(QuickML::QuickML::generate_footer): Add unsubscribe information
+	if a member is added.
+	(QuickML::QuickML::unsubscribe_info): New method.
+
+2003-01-16  Satoru Takabayashi  <satoru@namazu.org>
+
+	* lib/quickml/core.rb (QuickML::Processor::report_rejection):
+	Change the recipient address: @mail.envelope_from => @mail.from
+	(QuickML::Processor::report_invalid_mladdress): Ditto.
+	(QuickML::QuickML::quickml_headers): Add a new field: Precedence: bulk
+	- Thanks to SATOH Fumiyasu <fumiya@samba.gr.jp> for the suggestion.
+	(QuickML::QuickML::quickml_fields): Renamed from quickml_headers.
+
+2003-01-07  Satoru Takabayashi  <satoru@namazu.org>
+
+	* lib/quickml/core.rb (QuickML::QuickML::content_type): Fix 
+	Content-Type: text/plain; charset=iso-2022-jp; ... problem.
+	- The cause: use of destructive method String#<<
+	(QuickML::Processor::report_unsubscription): Change From: address.
+	@config.postmaster -> ml.address.
+
+2002-10-29  Satoru Takabayashi  <satoru@namazu.org>
+
+	* lib/quickml/gettext.rb (QuickML::GetText::GetText::gettext2):
+	New method.
+
+	* lib/quickml/core.rb (QuickML::QuickML::content_type): New method.
+	(QuickML::Processor::report_invalid_mladdress): Refine
+	Content-Type: handling.
+	(QuickML::Processor::report_invalid_mladdress): Refine messages.
+	(QuickML::QuickML::close): unlink @charset_file.
+	(QuickML::QuickML::report_ml_close_soon): Refine messages.
+
+	* lib/quickml/config.rb (QuickML::Config::initialize): Don't add
+	charset to content_type.
+
+	* lib/quickml/core.rb (QuickML::QuickML::init_charset): New method.
+	(QuickML::QuickML::initialize): New field: @charset.
+	(QuickML::QuickML::save_charset): New method.
+	(QuickML::QuickML::_submit): Use save_charset.
+
+2002-10-21  Satoru Takabayashi  <satoru@namazu.org>
+
+	* lib/quickml/core.rb (QuickML::QuickML::require_member_list):
+	Abolished. 
+	(QuickML::Processor::submit_article): Don't use
+	QuickML#require_member_list.
+
+2002-10-18  Satoru Takabayashi  <satoru@namazu.org>
+
+	* lib/quickml/core.rb (QuickML::QuickML::with_member_list?): New
+	method.
+	(QuickML::QuickML::generate_footer): Use with_member_list?.
+	(QuickML::QuickML::reset_error_member): Be private.
+	(QuickML::QuickML::initialize): New field: @member_list_required_p.
+	(QuickML::QuickML::require_member_list): New method.
+
+2002-10-17  Satoru Takabayashi  <satoru@namazu.org>
+
+	* lib/quickml/core.rb (QuickML::Processor::ml_address_in_to?): New
+	method.
+	(QuickML::Processor::submit_article): Use ml_address_in_to? to
+	add members only if the ml address is in To: field.
+	(QuickML::Processor::report_rejection): Preserve original
+	Content-Type: field.
+
+	(QuickML::Processor::acceptable_submission?): Use
+	ml_address_in_to? to limit the acceptable condition.
+
+	* lib/quickml/mail.rb (QuickML::Mail::collect_to): New method.
+	(QuickML::Mail::reply_to): Abolished.
+	
+	* lib/quickml/core.rb (QuickML::QuickML::_submit): Rewrite
+	Reply-To: address by force.
+	(QuickML::Processor::create_subml): Abolished.
+	(QuickML::Processor::subml_requested?): Abolished.
+	(QuickML::Processor::process_recipient): Remove subml processing.
+	(QuickML::QuickML::initialize): Remove @keyword_file field.
+	(QuickML::QuickML::init_keyword): Abolished.
+	(QuickML::QuickML::close): Remove @keyword_file handling.
+	(QuickML::QuickML::keyword=): Abolished.
+	(QuickML::Processor::get_keyword): Abolished.
+	(QuickML::Processor::acceptable_submission?): Remove keyword
+	handling. 
+	(QuickML::Processor::subml_requested?): Abolished.
+	(QuickML::ErrorInfo): Moved out from class QuickML
+	(QuickML::IcaseHash): Ditto.
+	(QuickML::IcaseArray): Ditto.
+	(QuickML::Processor::report_rejection): Preserve the original
+	message for rejection reporting.
+
+	* Makefile (LOCALSTATEDIR): $(PREFIX)/var/lib/quickml => 
+	$(PREFIX)/var/quickml
+
+	* lib/quickml/core.rb (QuickML::QuickML::IcaseArray: New class.
+	(QuickML::QuickML::IcaseHash): New class.
+	(QuickML::QuickML::init_members): Use IcaseArray and IcaseHash for
+	member management.
+
+2002-10-16  Satoru Takabayashi  <satoru@namazu.org>
+
+	* lib/quickml/config.rb (QuickML::Config::initialize): New
+	parameter: @info_url.
+	(QuickML::Config::initialize): Abolish @advertisement.
+
+	* lib/quickml/core.rb (QuickML::Processor::generate_footer): Use
+	@config.info_url.
+	(QuickML::QuickML::generate_footer): Ditto.
+
+	* quickmlrc.sample.in (info_url): New config parameter.
+
+	* lib/quickml/core.rb (QuickML::QuickML::rewrite_body): Refine
+	multipart handling.
+
+	* lib/quickml/mail.rb (QuickML::Mail::parts): New method.
+	(QuickML::Mail::initialize): New field: @content_type.
+	(QuickML::Mail::get_content_type): New method.
+	(QuickML::Mail::to_s): New method.
+	(QuickML::Mail::join_parts): New method.
+
+	* lib/quickml/core.rb (QuickML::Processor::process_recipient):
+	Call QuickML.new with @message_charset.
+	(QuickML::Processor::create_subml): Ditto.
+	(QuickML::ErrorMailHandler::initialize): New field: @message_charset.
+
+	* lib/quickml/sweeper.rb (QuickML::Sweeper::initialize): New
+	field: @message_charset.
+	(QuickML::Sweeper::sweep): Call QuickML.new with @message_charset.
+
+	* lib/quickml/core.rb (QuickML::QuickML::initialize): New field:
+	@message_charset.
+	(QuickML::Processor::initialize): New field: @message_charset.
+
+	* lib/quickml/server.rb (QuickML::Session::initialize): New field:
+	@message_charset. 
+	(QuickML::Session::data): Set @message_charset to mail.charset.
+
+	* lib/quickml/gettext.rb (QuickML::GetText::GetText::gettext):
+	Check @message_charset.
+
+	* lib/quickml/mail.rb (QuickML::Mail::get_charset): New method.
+	(QuickML::Mail::read): Use get_charset.
+	(QuickML::Mail::initialize): New field: @charset.
+
+	* quickmlrc.sample.in: Introduce @USER@ and @GROUP@ substitutions.
+	- by applying a patch by "Akinori MUSHA" <knu@iDaemons.org>
+
+	* lib/quickml/gettext.rb (QuickML::GetText::GetText::codeconv):
+	Fix a bug occurred when @catalog is nil.
+	- by applying a patch by "Akinori MUSHA" <knu@iDaemons.org>
+
+	* Makefile: Refine install: rule.
+	- by applying a patch by "Akinori MUSHA" <knu@iDaemons.org>
+
+2002-10-09  Satoru Takabayashi  <satoru@namazu.org>
+
+	* lib/quickml/mail.rb (QuickML::Mail::empty_body?): Support
+	Japanese zenkaku-space.
+
+2002-08-26  Satoru Takabayashi  <satoru@namazu.org>
+
+	* lib/quickml/core.rb (QuickML::QuickML::init_members): Remove a
+	redundant temporary variable.
+	(QuickML::QuickML::error_member?): Removed.
+	(QuickML::QuickML::reset_error_member): New method.
+	(QuickML::QuickML::submit): Call reset_error_member(mail.from).
+
+2002-08-07  Satoru Takabayashi  <satoru@namazu.org>
+
+	* lib/quickml/core.rb (QuickML::QuickML::plain_text?): New method.
+	(QuickML::QuickML::rewrite_body): Rewrite a single part body only
+	if the body is a text/plain message.
+
+2002-07-10  Satoru Takabayashi  <satoru@namazu.org>
+
+	* lib/quickml/core.rb (QuickML::Processor::mail_log): Add logging
+	for bare From: and Cc:.
+
+	* lib/quickml/mail.rb (QuickML::Mail::collect_address): Allow
+	a double-quoted address.
+
+2002-07-08  Satoru Takabayashi  <satoru@namazu.org>
+
+	* lib/quickml/mail.rb (QuickML::Mail::add_recipient): New method.
+	(QuickML::Mail::clear_recipients): New method.
+
+	* lib/quickml/server.rb (QuickML::Session::rset): Use
+	Mail#clear_recipients. 
+	(QuickML::Session::rcpt): Use Mail#add_recipient
+
+	* lib/quickml/mail.rb (QuickML::Mail::normalize_address): Remove
+	double quotations. "foobar"@example.com -> foobar@example.com
+	(QuickML::Mail::remove_comment_in_field): Don't remove
+	double-quoted string like "Satoru Takabayashi"
+
+2002-06-28  Satoru Takabayashi  <satoru@namazu.org>
+
+	* lib/quickml/config.rb (QuickML::Config::initialize): New field:
+	@allowable_error_interval.
+
+	* lib/quickml/core.rb (QuickML::QuickML::obfuscate_address):
+	Renamed from ambiguate_address.
+	(QuickML::QuickML::ErrorInfo): New class.
+	(QuickML::QuickML::init_members): Change error member handling.
+	(QuickML::QuickML::save_member_file): Ditto.
+	(QuickML::QuickML::error_count): Ditto.
+	(QuickML::QuickML::inc_error_count): Ditto.
+	(QuickML::QuickML::add_error_member): Ditto.
+	(QuickML::QuickML::allowable_error_interval?): New method.
+
+2002-06-27  Satoru Takabayashi  <satoru@namazu.org>
+
+	* lib/quickml/server.rb (QuickML::Session::end_of_data?): New method.
+	(QuickML::Session::discard_data): Use end_of_data?
+	(QuickML::Session::read_mail): Ditto.
+
+	* lib/quickml/mail.rb (QuickML::Mail::send_mail): Take a new
+	parameter smtp_port.
+
+	* lib/quickml/config.rb (QuickML::Config::initialize): Add new
+	field: @smtp_port. Patch by Kenshi Muto <kmuto@topstudio.co.jp>
+
+	* lib/quickml/mail.rb (QuickML::Mail::initialize): Abolish
+	@max_length and @length fields.
+	(QuickML::Mail::push_body): Abolished.
+
+	* lib/quickml/server.rb (QuickML::Session::read_mail): Optimized.
+	Avoid use of String#<< in while loop. Instead, use Arrray#<< to
+	collect lines. I don't know why this change improves performance,
+	but it does.
+	(QuickML::Session::process): Call cleanup_connection for TooLargeMail.
+	(QuickML::Session::cleanup_connection): Send 221 Bye instead of 554.
+	(QuickML::Session::read_mail): Check @config.max_mail_length in
+	this method..
+
+	* lib/quickml/mail.rb (Net::BufferedSocket#write_pendstr):
+	Rewriten for optimization by Fumitoshi UKAI <ukai@debian.or.jp>.
+
+	* lib/quickml/utils.rb (String::xchomp!): Optimized. Don't use gsub!
+	anymore.
+	(String::xchomp): Ditto.
+	(String::normalize_eol): New method.
+
+	* lib/quickml/mail.rb (QuickML::Mail::read): Optimized.
+	(QuickML::Mail::push_body): Simplified.
+
+	* quickmlrc.sample: Change :max_mail_length to 1024 * 1024 (1MB)
+
+2002-06-24  Satoru Takabayashi  <satoru@namazu.org>
+
+	* lib/quickml/mail.rb (QuickML::Mail::encode_field): Refine the
+	regular expression to avoid "mojibake" of 1-length Japanese char.
+
+2002-05-01  Satoru Takabayashi  <satoru@namazu.org>
+
+	* lib/quickml/core.rb (QuickML::QuickML::_submit): Don't change
+	"To:" and "From:" address.
+
+	* messages.ja: Add messages.
+
+	* lib/quickml/core.rb (QuickML::Processor::report_rejection): Add
+	messages.
+
+2002-04-28  Satoru Takabayashi  <satoru@namazu.org>
+
+	* lib/quickml/server.rb (QuickML::Session::initialize): New field:
+	@my_hostname.
+	(QuickML::Session::helo): Use @my_hostname.
+	(QuickML::Session::ehlo): Ditto.
+	(QuickML::Session::received_field): Ditto.
+	(QuickML::Session::connect): Ditto.
+	(QuickML::Server::start): Ditto.
+
+	* with-mta.ja.rd: Update documantation.
+	- applying a patch by Naoto Morishima <naoto@morishima.net>
+
+	* lib/quickml/server.rb (QuickML::Server::initialize): Use
+	@config.bind_address. 
+	- applying a patch by Naoto Morishima <naoto@morishima.net>
+
+	* lib/quickml/config.rb (QuickML::Config::initialize): New field:
+	bind_address.
+	- applying a patch by Naoto Morishima <naoto@morishima.net>
+
+2002-04-25  Satoru Takabayashi  <satoru@namazu.org>
+
+	* lib/quickml/core.rb (QuickML::Processor::generate_footer): New
+	method.
+	(QuickML::Processor::report_invalid_mladdress): Use generate_footer.
+	(QuickML::Processor::report_too_many_members): Ditto.
+	(QuickML::Processor::report_unsubscription): Ditto.
+	(QuickML::Processor::report_rejection): Ditto.
+
+2002-04-09  Satoru Takabayashi  <satoru@namazu.org>
+
+	* lib/quickml/mail.rb (QuickML::Mail::collect_address): Add "?"
+	and "/" to support an address like <fooi?bar/@example.jp>.
+
+2002-04-05  Satoru Takabayashi  <satoru@namazu.org>
+
+	* lib/quickml/server.rb (QuickML::Session::read_mail): Substitute
+	".." in the beginning of line to ".".
+
+2002-04-04  Satoru Takabayashi  <satoru@namazu.org>
+
+	* lib/quickml/mail.rb (QuickML::Mail::encode_field): Use toeuc.
+
+2002-03-20  Satoru Takabayashi  <satoru@namazu.org>
+
+	* lib/quickml/core.rb (QuickML::QuickML::report_removed_member):
+	Change From: Address. Use ML address instead of postmaster.
+	(QuickML::QuickML::report_ml_close_soon): Ditto.
+
+2002-03-18  Satoru Takabayashi  <satoru@namazu.org>
+
+	* lib/quickml/mail.rb (QuickML::Mail::encode_field): Refined.
+
+2002-03-12  Satoru Takabayashi  <satoru@namazu.org>
+
+	* Makefile (VERSION): Bumped version number to 0.6.
+
+	* lib/quickml/core.rb (QuickML::QuickML::generate_header): New method.
+	(QuickML::QuickML::rewrite_body): Use generate_header.
+	(QuickML::QuickML::add_member): Update @add_members.
+
+2002-03-10  Satoru Takabayashi  <satoru@namazu.org>
+
+	* lib/quickml/core.rb (QuickML::QuickML::add_error_member): Do
+	nothing unless @active_members.include?(address).
+
+2002-03-09  Satoru Takabayashi  <satoru@namazu.org>
+
+	* lib/quickml/config.rb (QuickML::Config::initialize): Fix the
+	config[:verbose_mode] handling.
+
+2002-03-08  Satoru Takabayashi  <satoru@namazu.org>
+
+	* with-mta.ja.rd: Fix the description for Postfix.
+	Suggested by akira yamada <akira@arika.org>.
+
+2002-03-07  Satoru Takabayashi  <satoru@namazu.org>
+
+	* lib/quickml/core.rb (QuickML::QuickML::generate_footer): Use
+	codeconv for @config.advertisement.
+
+	* lib/quickml/gettext.rb (QuickML::GetText::GetText::codeconv):
+	New method.
+	(QuickML::GetText::GetText::gettext): Use codeconv.
+
+2002-03-04  Satoru Takabayashi  <satoru@namazu.org>
+
+ 	* quickml: Version 0.5 released.
+
+	* Makefile (VERSION): Bumped version number to 0.5.
+
+	* lib/quickml/utils.rb (Time::rfc2822): Abolished. Use time.rb instead.
+
+	* lib/quickml/server.rb (QuickML::Session::read_mail): Mark
+	@data_finished in the method instead of `data' method.
+	(QuickML::Session::discard_data): New method.
+	(QuickML::Session::cleanup_connection): Use discard_data. Call quit.
+	(QuickML::Session::process): Call quit when TooLargeMail.
+	require 'time' to use Time#rfc2822
+
+2002-03-01  Satoru Takabayashi  <satoru@namazu.org>
+
+	* lib/quickml/core.rb (QuickML::QuickML::report_ml_close_soon):
+	Change the log message.
+	(QuickML::QuickML::report_removed_member): Ditto.
+	(QuickML::Processor::sender_knows_an_active_member?): Use
+	Enumerable#find not Enumerable#each.
+
+ 	* quickml: Version 0.4 released.
+
+	* lib/quickml/core.rb (QuickML::QuickML::generate_footer): New method.
+	(QuickML::QuickML::rewrite_body): Use generate_footer.
+	(QuickML::QuickML::report_ml_close_soon): Ditto.
+	(QuickML::QuickML::report_removed_member): Ditto.
+
+	* lib/quickml/core.rb (QuickML::QuickML::generate_return_address):
+	Generate a return address for qmail's VERP if @config.use_qmail_verp.
+
+	* quickmlrc.sample.in: Add :use_qmail_verp => false.
+
+	* lib/quickml/config.rb (QuickML::Config::use_qmail_verp): New field.
+
+2002-02-28  Satoru Takabayashi  <satoru@namazu.org>
+
+	* lib/quickml/config.rb (QuickML::Config::log_file): New field.
+
+	* lib/quickml/server.rb (be_secure): New method.
+	(QuickML::Server::start): Call be_secure.
+	(touch): New method.
+
+	* quickml.in (be_secure): Abolished.
+
+	* lib/quickml/utils.rb (QuickML::Utils): Abolished.
+
+	* lib/quickml/mail.rb (QuickML::Mail::send_mail): Moved fomr
+	QuickML::Utils.
+	(QuickML::Mail::address_of_domain?): Ditto.
+	(QuickML::Mail::encode_field): Ditto.
+	(QuickML::Mail::clean_subject): Ditto.
+	(QuickML::Mail::rewrite_subject): Ditto.
+
+	* lib/quickml/server.rb (QuickML::Session::cleanup_connection):
+	Check @data_finished and discard all data if not finished.
+
+	* quickml.in (be_secure): New method.
+
+	* lib/quickml/server.rb (QuickML::Server::be_secure): Abolished.
+
+2002-02-26  Satoru Takabayashi  <satoru@namazu.org>
+
+	* lib/quickml/server.rb (QuickML::Server::initialize): Use
+	Dir.chroot for security.
+	(QuickML::Server::initialize): Use Process.uid= for security.
+	(QuickML::Server::initialize): Use Process.gid= for security.
+	(QuickML::Server::be_secure): New method.
+	(QuickML::Session::ehlo): Return "localhost" if port != 25.
+
+	* lib/quickml/config.rb (QuickML::Config::data_dir): Be attr_accessor.
+
+	* quickmlrc.sample.in: Add New fields.
+
+	* lib/quickml/config.rb (QuickML::Config::port): New field.
+	* lib/quickml/config.rb (QuickML::Config::user): Ditto.
+	* lib/quickml/config.rb (QuickML::Config::group): Ditto.
+
+	* lib/quickml/server.rb (QuickML::Server::initialize): Use
+	@config.port.
+
+	* lib/quickml.rb: New file.
+	lib/quickml/config.rb: New file.
+	lib/quickml/core.rb: New file.
+	lib/quickml/gettext.rb: New file.
+	lib/quickml/logger.rb: New file.
+	lib/quickml/mail.rb: New file.
+	lib/quickml/server.rb: New file.
+	lib/quickml/sweeper.rb: New file.
+	lib/quickml/utils.rb: New file.
+	lib/quickml/version.rb: New file.
+
+	* QuickML: Separate library files.
+
+	* quickml.in (QuickML::QuickML::_submit): Don't modify Content-Type.
+	(QuickML::QuickML::rewrite_body): Use \A to match Content-Type.
+	(QuickML::QuickMLProcessor::report_rejection): Send a mail to 
+	@mail.envelope_from.
+	(QuickML::QuickMLProcessor::report_invalid_mladdress): Ditto.
+	(QuickML::QuickMLSession::report_too_large_mail): Ditto.
+	(QuickML::QuickUtil::normalize_address): Support domainless address.
+	(QuickML::QuickML::exclude?): New method.
+	(QuickML::QuickML::add_member): Use exclude?
+	(String::xchomp!): New method.
+	(String::xchomp): New method.
+	(QuickML::QuickUtil::xchomp): Abolished.
+	(QuickML::QuickUtil::xchomp!): Ditto.
+	(QuickML::QuickMLSession::receive_mail): Use String#xchomp!
+	(QuickML::QuickMLSession::cleanup_connection): Ditto.
+	(QuickML::QuickMLSession::read_mail): Use QuickMail#read
+	(QuickML::QuickMail::read): New method.
+	(QuickML::QuickMail::unshift_field): New method.
+
+2002-02-25  Satoru Takabayashi  <satoru@namazu.org>
+
+	* quickml.in (Net::NetPrivate::SMTPCommand::mailfrom): Check
+	not fromaddr.empty? to use XVERP.
+
+	* Makefile (VERSION): Bumped version number to 0.4.
+
+	* quickml.in (QuickML::QuickML::report_removed_member): Set
+	:envelope_from => ''.
+	(QuickML::QuickML::report_ml_close_soon): Ditto.
+	(QuickML::QuickMLProcessor::report_rejection): Ditto.
+	(QuickML::QuickMLProcessor::report_unsubscription): Ditto.
+	(QuickML::QuickMLProcessor::report_too_many_members): Ditto.
+	(QuickML::QuickMLProcessor::report_invalid_mladdress): Ditto.
+	(QuickML::QuickMLSession::report_too_large_mail): Ditto.
+	(QuickML::QuickUtil::encode_field): Renamed from encode_subject.
+	(QuickML::QuickML::report_removed_member): Use _() for subject.
+	(QuickML::QuickML::report_ml_close_soon): Ditto.
+	(QuickML::QuickMLProcessor::report_rejection): Ditto.
+	(QuickML::QuickMLProcessor::report_unsubscription): Ditto.
+	(QuickML::QuickMLProcessor::report_too_many_members): Ditto.
+	(QuickML::QuickMLProcessor::report_invalid_mladdress): Ditto.
+	(QuickML::QuickMLSession::report_too_large_mail): Ditto.
+
+2002-02-19  Satoru Takabayashi  <satoru@namazu.org>
+
+ 	* quickml: Version 0.3 released.
+
+	* ml-usage.en.rd: New file.
+
+	* quickml.en.rd: New file.
+
+	* Makefile (quickml.en.html): Add the rule for quickml.en.html
+
+	* quickml.in: Gettextized using SimpleGetText! 
+	(SimpleGetText::GetText): New module.
+	(SimpleGetText::Catalog::initialize): New class.
+	(QuickML::QuickML::report_ml_close_soon): Send mail to @address.
+	(QuickML::QuickML::report_removed_member): Ditto.
+	(QuickML::QuickML::init_members): Use Hash for @error_members.
+	(QuickML::QuickMLConfig::auto_unsubscribe_count): Renamed from
+	max_error_mails.
+
+	* quickml.in (QuickML::QuickMLConfig::catalog): New field.
+	(QuickML::QuickMLConfig::content_type): New field.
+
+	* checkmsg.rb: New file.
+
+	* messages.ja: New file.
+
+	* Makefile: Install messages.ja
+
+2002-02-18  Satoru Takabayashi  <satoru@namazu.org>
+
+	* quickml.in (Net::NetPrivate::SMTPCommand::mailfrom): Use
+	XVERP=-= instead of XVERP=+= because some mail servers reject 
+	MAIL FROM: address including '+'.
+	(QuickML::QuickML::return_address): Renamed from owner_address.
+	(QuickML::QuickML::generate_return_address): New method.
+	(QuickML::QuickMLErrorMailHandler::handle): Change the regex.
+	(QuickML::QuickML::send_alert): Use @config.postmaster for From:
+	address.
+	(QuickML::QuickMLProcessor::report_rejection): Ditto.
+	(QuickML::QuickMLProcessor::report_unsubscription): Ditto.
+	(QuickML::QuickMLProcessor::report_too_many_members): Ditto.
+	(QuickML::QuickML::init_members): Handle @error_members.
+	(QuickML::QuickML::save_member_file): Ditto.
+	(QuickML::QuickML::remove_member): Dttio.
+	(QuickML::error_member?): New method.
+	(QuickML::QuickML::add_error_member): New method.
+	(QuickML::QuickML::report_ml_close_soon): Renamed from send_alert.
+	(QuickML::QuickML::report_removed_member): New method.
+	(QuickML::QuickMLConfig::max_error_mails): New field.
+	(QuickML::QuickML::remove_error_member): New method.
+	(QuickML::QuickML::error_count): New method.
+	(QuickML::QuickML::inc_error_count): New method.
+
+	* quickmlrc.sample.in: Add :max_error_mails.
+
+2002-02-16  Satoru Takabayashi  <satoru@namazu.org>
+
+	* quickml.in (File.safe_open): Brushed up by applying a patch by
+	Kazuhiro NISHIYAMA <zn@mbf.nifty.com>
+	(QuickML::QuickUtil::clean_subject): Ditto.
+	(QuickML::QuickMail::collect_address): Ditto.
+	(QuickML::QuickMail::remove_comment_in_field): Ditto.
+	(QuickML::QuickMail::multipart?): Ditto.
+	(QuickML::QuickMail::boundary): Ditto.
+	(QuickML::QuickMLProcessor::get_keyword): Ditto.
+	(QuickML::QuickMLSession::initialize): Ditto.
+	(QuickMLException): Ditto.
+	(QuickML::TooLargeMail): Ditto.
+	(QuickML::TooManyMembers): Ditto.
+	(QuickML::InvalidMLName):  Ditto.
+	(Net::NetPrivate::SMTPCommand::ehlo): Mixin for using XVERP.
+	(Net::NetPrivate::SMTPCommand::mailfrom): Ditto.
+	(QuickML::QuickMLErrorMailHandler): New class.
+	(QuickML::QuickMLProcessor::get_ml_mutex): Abolished.
+	(QuickML::QuickMLConfig): Renamed from QuickConfig.
+	(QuickML::QuickMLConfig::ml_mutex): New method.
+	(QuickML::QuickMLSweeper::sweep): Use @config.ml_mutex.
+	(QuickML::QuickMLProcessor::process_recipient): Ditto.
+	(QuickML::QuickML::save_member_file): Ditto.
+	(QuickML::QuickML::remove_member): Ditto.
+
+2002-02-14  Satoru Takabayashi  <satoru@namazu.org>
+
+	* quickml.in (QuickML::QuickUtil::send_mail): Remove a meaningless
+	line. try = 0. 
+	(QuickML::QuickUtil::normalize_address): New method.
+	(QuickML::QuickMail::collect_cc): Use normalize_address.
+	(QuickML::QuickMail::reply_to): Ditto.
+	(QuickML::QuickMail::from): Ditto.
+	(QuickML::QuickMail::remove_comment_in_field): Be private.
+	(QuickML::QuickMail::collect_address): New method.
+	(QuickML::QuickMail::collect_cc): Rewritten using collect_address.
+	(QuickML::QuickMail::reply_to): Ditto.
+	(QuickML::QuickMail::from): Ditto.
+
+	* Makefile (VERSION): Bumped version number to 0.3.
+
+2002-02-12  Satoru Takabayashi  <satoru@namazu.org>
+
+ 	* quickml: Version 0.2 released.
+
+	* Makefile (VERSION): Bumped version number to 0.2.
+
+	* quickmlrc.sample.in: Change @DATADIR@ to @LOCALSTATEDIR@.
+	Suggested by akira yamada <akira@arika.org>.
+	
+	* quickml.in (QuickML::QuickMLServer::be_daemon): Use exit!(0)
+	to tell the server is successfully invoked. Suggested by 
+	akira yamada <akira@arika.org>.
+	(main): trap(:HUP) to reopen the logfile.
+	(QuickML::QuickLogger::reopen): New method. Patch by 
+	akira yamada <akira@arika.org>.
+
+	* Makefile (quickmlrc.sample): Remove unneccesary chmod
+	+x. Suggested by akira yamada <akira@arika.org>.
+
+ 	* quickml: Version 0.1 released.
+
+	* quickml.in: require 'nkf' instead of 'kconv'
+
+2002-02-09  Satoru Takabayashi  <satoru@namazu.org>
+
+	* quickml.in (QuickML::QuickMLSession::receive_mail): Return 502
+	error for unknown commands.
+
+2002-02-07  Satoru Takabayashi  <satoru@namazu.org>
+
+	* quickml (QuickLogger): New class.
+	(QuickUtil::load_config): New method.
+
+2002-02-06  Satoru Takabayashi  <satoru@namazu.org>
+
+	* quickml (QuickMail::collect_cc): Renamed from collect_recipients
+	(QuickMLProcessor::unsubscribe_self): New method.
+	(QuickMLProcessor::unsubscribe_other): New method.
+	(QuickMLProcessor::unsubscribe): Use unsubscribe_self and
+	unsubscribe_other. 
+	(QuickMLProcessor::report_unsubscription): Support 3rd party
+	unsubscription.
+
+2002-02-04  Satoru Takabayashi  <satoru@namazu.org>
+
+	* quickml (QuickMail::remove_comment_in_field): Renamed from
+	remove_comment_in_from.
+	(QuickMail::collect_recipients): Use remove_comment_in_field.
+
+2002-01-25  Satoru Takabayashi  <satoru@namazu.org>
+
+	* quickml (QuickMLSession::ehlo): Add PIPELINING support.
+	(QuickMLSession::rcpt): Add error handling.
+	(QuickMLSession::mail): Ditto.
+	(QuickMLSession::data): Ditto.
+	(QuickUtil::puts_log): 2002-01-25 02:51:05 -> 2002-01-25T02:51:05
+	To be compliant with ISO 8601 and XML Schema Part 2: Datatypes
+
+2002-01-24  Satoru Takabayashi  <satoru@namazu.org>
+
+	* quickml (QuickMLSession::rcpt): Return 554 if a requested RCPT
+	address is unacceptable.
+
+2002-01-23  Satoru Takabayashi  <satoru@namazu.org>
+
+	* quickml (QuickML::_submit): New method.
+	(QuickML::submit): Record a time to send a mail to the log file.
+	(QuickMLServer::process_session): Record backtrace to the log file.
+	(QuickMLSweeper::start): Ditto.
+	(QuickMLSession::process): Create QuickMail object in the method.
+	To handle TooLargeMail and TooLongLine exceptions.
+	(QuickMLSession::receive_mail): Don't create QuickMail object.
+	(QuickMLSession::report_too_large_mail): Refine messaeges.
+	(QuickUtil::commify): New method.
+	(QuickMLProcessor::report_invalid_mladdress): Renamed from
+	report_invalid_mlname. 
+
+2002-01-22  Satoru Takabayashi  <satoru@namazu.org>
+
+	* quickml (QuickML::quickml_headers): Put @name to X-ML-Name:
+	instead of @short_name.
+	(QuickML::unlimited?): New method.
+	(QuickML::too_many_users?): New method.
+	(QuickML::add_member): Use too_many_users?.
+	(QuickMail::remove_comment_in_from): New method.
+	(QuickMail::from): Use remove_comment_in_from.
+	(QuickMLSession::_start): New method.
+	(QuickMLSession::start): Record an elapsed time to the log file.
+
+2002-01-21  Satoru Takabayashi  <satoru@namazu.org>
+
+	* quickml (QuickMLSession::connect): redefine @socket#puts to output
+	CR/LF. To handle mail from hotomail.com.
+
+2002-01-15  Satoru Takabayashi  <satoru@namazu.org>
+
+	* quickml (QuickML::rewrite_body): Insert ML address.
+	(QuickML::ambiguate_address): New method.
+	(QuickMLSession::connect): make @socket use CRLF.
+	(QuickMLSession::mail): Allow whitespaces before "<...>".
+	(QuickMLSession::rcpt): Allow whitespaces before "<...>".
+	(QuickMLServer::read_pidfile): New method.
+	(QuickMLServer::remove_pidfile): Remove pidfile only if it equals
+	to Process.pid.
+	(QuickUtil::xchomp!): Moved from QuickMLSession.
+	(QuickUtil::xchomp): New method.
+	(QuickMLSession::connect): Speak ESMTP.
+	(QuickUtil::puts_log): Change time format.
+	(QuickMLSession::rcpt): Allow omitting < >.
+	To handle mail from docomo.ne.jp.
+	(QuickMLSession::mail): Ditto.
+	(QuickMail::collect_recipients): New method.
+	(QuickMail::collect_cc): Abolished.
+	(QuickMLProcessor::sender_knows_an_active_member?): Use
+	QuickMail#collect_recipients. 
+	(QuickMLProcessor::submit_article): Ditto.
+
+2002-01-08  Satoru Takabayashi  <satoru@namazu.org>
+
+	* quickml (QuickMLSession::process): New method.
+	(QuickMLSession::close): New method.
+	(QuickConfig::timeout): New field.
+	(QuickML::get_name): raise InvalidMLName if two or more "@".
+	(QuickMLServer::shutdown): Call BasicSocket#shutdown.
+
+2002-01-06  Satoru Takabayashi  <satoru@namazu.org>
+
+	* quickml (QuickConfig::max_threads): New field.
+	(QuickMLServer::accept): Control the number of working threads
+	using ThreadWait#next_wait.
+	(QuickML::inc_count): Be private.
+	(QuickML::flock_sync): Abolished.
+	(QuickMLSweeper::start): Call sleep first.
+	(QuickConfig::ml_mutexes): New field.
+	(QuickMLProcessor::get_ml_mutex): New method.
+	(QuickMLProcessor::process_recipient): Use ml_mutex for synchronization.
+
+2002-01-05  Satoru Takabayashi  <satoru@namazu.org>
+
+	* quickml (File::safe_open): Renamed from eopen.
+	(QuickML::rewrite_body): New method.
+	(QuickConfig::advertisement): New field.
+	(QuickMail::multipart?): New method.
+	(QuickMail::boundary): New method.
+	(QuickML::member_list): New method.
+	(QuickML::add_member): Set @member_added_p to true.
+
+2001-12-24  Satoru Takabayashi  <satoru@namazu.org>
+
+	* quickml (QuickUtil::clean_subject): Remove "New ML!" handling.
+	(QuickUtil::rewrite_subject): Remove "New ML!" handling.
+	(QuickUtil::rewrite_subject): Take `name' and `count' parameters.
+	(QuickML::submit): Pass @short_name and @count to rewrite_subject.
+	(QuickML::send_alert): Send an alert mail to the ML creator only.
+	(QuickMLServer::initialize): @status: New instance variable.
+	(QuickMLServer::remove_pidfile): New method.
+	(QuickMLServer::shutdown): Change @status to :shutdown.
+	(QuickMLServer::accept): Set socket.sync = true.
+	(QuickMLServer::shutdown): Call @server.close.
+	(QuickMLServer::accept): Refined.
+	(QuickMLServer::process_session): New method.
+	(QuickMLServer::accept): Manage sessions with Thread#join.
+	(QuickMLSweeper::initialize): New instance variable: @status
+	(QuickMLSweeper::sweep): Use @status for safe shutdown.
+	(QuickMLSweeper::shutdown): New method.
+	(main): Call sweeper.shutdown when trap signals for safe shutdown.
+
+2001-12-22  Satoru Takabayashi  <satoru@namazu.org>
+
+	* quickml (QuickMLProcessor::process_recipient): return instead of next
+
+2001-12-21  Satoru Takabayashi  <satoru@namazu.org>
+
+	* quickml (QuickMLServer::shutdown): Renamed from cleanup.
+	(main): trap :TERM and :INT.
+
+2001-12-17  Satoru Takabayashi  <satoru@namazu.org>
+
+	* quickml (QuickML::valid_name?): New class method.
+	(QuickML::last_article_time): New method.
+	(QuickML::inactive?): New method.
+	(QuickML::need_alert?): New method.
+	(QuickML::send_alert): New method.
+	(QuickMLSweeper): New class.
+	(QuickML::close): New method.
+	(QuickMLSession::rcpt): Exclude unacceptable RCPT TO: address.
+	(InvalidMLName): New exception class.
+	(QuickMLProcessor::process_recipient): New method.
+	(main): Create a sweeper and run the sweeper in a thread.
+	(QuickML::initialize): Validate the ML name using valid_name?.
+	(QuickML::initialize): Use "," instead of "." for additional files.
+	(QuickML::close_ml): Removed.
+	(QuickML::permanent?): New method.
+	(QuickMLProcessor::report_invalid_mlname): New method.
+	(QuickML::quickml_headers): New method.
+	(QuickUtil::decode_subject): New method.
+	(QuickUtil::rewrite_subject): New method.
+	(QuickUtil::clean_subject): New method.
+	(QuickUtil::encode_subject): New method.
+	(QuickML::send_alert): New method.
+	(QuickML::submit): New method.
+	(QuickMLProcessor::send_ml_mail): Removed.
+	(QuickMLProcessor::decode_subject): Removed.
+	(QuickMLProcessor::rewrite_subject): Removed.
+	(QuickMLProcessor::clean_subject): Removed.
+	(QuickMLProcessor::encode_subject): Removed.
+	(QuickMLSweeper::start): Rescue all exceptions.
+	(QuickMLServer::accept): Rescue all exceptions.
+
+2001-12-11  Satoru Takabayashi  <satoru@namazu.org>
+
+	* quickml (QuickMLProcessor::encode_subject): Use space instead of
+	TAB for concatinating adjacent lines.
+
+2001-12-09  Satoru Takabayashi  <satoru@namazu.org>
+
+	* quickml (QuickMail::empty_body): Fix the regex pattern. \s+ -> \s*
+
+2001-12-05  Satoru Takabayashi  <satoru@namazu.org>
+
+	* quickml (QuickMLSession::report_too_large_mail): Refined.
+	(QuickMLProcessor::report_too_many_members): Refined.
+	(QuickMLProcessor::report_unsubscription): Refined.
+	(QuickMLProcessor::report_rejection): Refined.
+	(QuickMLProcessor::send_ml_mail): Refined.
+	(QuickConfig::max_members): New field.
+	(QuickConfig::max_mail_length): New field.
+	(QuickMLSession::initialize): Remove @max_mail_length.
+	(QuickML::initialize): Remove @max_members.
+	(QuickMLProcessor::submit_article): Renamed from
+	submit_article_successfully.	
+	(IO::safe_gets): Simplified.
+
+2001-12-04  Satoru Takabayashi  <satoru@namazu.org>
+
+	* quickml (QuickConfig): New class.
+	(QuickMLServer::initialize): Change parameter. Use config.
+	(QuickMLSession::initialize): Change parameter. Use config.
+	(QuickMLProcessor::initialize): Change parameter. Use config.
+	(QuickML::initialize): Change parameter. Use config.
+	(QuickML::close_ml): Add checks.
+	(QuickMail::initialize): Make @body be String.
+	(QuickMail::push_body): Renamed from body_push
+	(QuickMail::white_line): Simplified.
+	(QuickMail::empty_body): Simplified.
+	(QuickMLProcessor::to_owner): Simplified.
+	(QuickMLProcessor::unsubscribe_requested): Simplified.
+	(QuickConfig::initialize): Remove @wildcard_mx.
+	(QuickMLSession::receive_mail): Add error messaging.
+	(File::safe_unlink): New method.
+	(QuickMLServer::cleanup): Use File.safe_unlink.
+	(QuickML::close_ml): Use File.safe_unlink.
+	(QuickUtil::send_mail): Refined.
+	(QuickConfig::postmaster): New field.
+
+2001-12-01  Satoru Takabayashi  <satoru@namazu.org>
+
+	* quickml (QuickMLSession::initialize): New instance variables:
+	@peer_hostname and @peer_address.
+	(QuickMLSession::received_field): Use @peer_hostname and @peer_address
+	(QuickMLServer::accept): Add exception handling.
+	(QuickMLSession::receive_mail): Call QuickMail.new in the method.
+	(QuickMLSession::start): Loop for multiple mails at the one connection
+	(QuickMLSession::quit): Call Scoket#close.
+	(QuickMLSession::report_too_large_mail): Use <postmaster@quickml.com>.
+	(QuickMLProcessor): New class.
+
+2001-11-30  Satoru Takabayashi  <satoru@namazu.org>
+
+	* quickml (QuickML::forward?): New method.
+	(QuickMLSession::accept_submission): Check ml.forward?
+	(QuickMLSession::accept_submission): Remove collision handling.
+	(QuickMLSession::collision_occur?): Removed.
+	(QuickML::uniq_new): Removed.
+	(QuickML::next_name): Removed.
+	(QuickML::get_name): Be instance method.
+	(QuickMail::[]=): Removed.
+	(QuickMail::push_field): New method.
+	(QuickMail::concat_field): New method.
+	(QuickMLSession::read_mail): Use QuickMail#push_field.
+	(QuickMLSession::read_mail): Use QuickMail#concat_field.
+	(TCPSocket::address): New method.
+	(TCPSocket::hostname): New method.
+	(QuickMLSession::connect): Use Socket#address and Socket#hostname.
+	(QuickMLSession::send_mail): Use received_field.
+	(QuickMLSession::received_field): New method.
+	(QuickMLSession::helo): Set @hello_host.
+	(QuickMLSession::ehlo): Set @protocol.
+
+2001-11-29  Satoru Takabayashi  <satoru@namazu.org>
+
+	* quickml (QuickMail::reply_to): New method.
+	(QuickMLSession::unsubscribe_requested?): New method.
+	(QuickMLSession::error_mail?): New method.
+	(QuickMLSession::create_subml): New method.
+	(QuickMLSession::subml_requeseted?): New method.
+	(QuickMLSession::clean_subject): New method.
+	(QuickMLSession::get_keyword): New method.
+	(QuickML::init_keyword): New method.
+	(QuickML::keyword=): New method.
+	(QuickMLSession::send_ml_mail): Use mail.reply_to if nonnil.
+	(QuickMLSession::acceptable_submission?): Add a new condition.
+
+2001-11-26  Satoru Takabayashi  <satoru@namazu.org>
+
+	* quickml (QuickML::parse_address): New method.
+	(QuickMLSession::submit_article_successfully): New method.
+	(QuickML::uniq_new): New class method.
+	(QuickML::next_name): New class method.
+	(QuickML::get_name): New class method.
+	(QuickMLSession::rewrite_subject): Indicate "New ML!".
+	(QuickML::short_name): New field.
+	(QuickMLSession::collision_occur): New method.
+	(QuickML::get_name): Simplified.
+	(QuickML::add_member): Use @domain to exclude an address.
+	(QuickML::close_ml): Be public.
+	(QuickMLSession::submit_article_successfully): Send mail only if
+	not active_members.empty?
+
+2001-11-25  Satoru Takabayashi  <satoru@namazu.org>
+
+	* quickml: Set $KCODE to "e".
+	(QuickMLSession::rewrite_subject): Be case-insensitive to allow RE:
+
+2001-11-24  Satoru Takabayashi  <satoru@namazu.org>
+
+	* quickml (QuickMLSession::rewrite_subject): Refined.
+	(QuickMLSession::encode_subject): New method.
+	(QuickMLSession::decode_subject): New method.
+	(QuickMail::white_line): New method.
+	(QuickMail::empty_body): New method.
+	(QuickMLSession::sender_knows_an_active_member): New method.
+	(QuickMLSession::acceptable_submission): New method.
+	(QuickMLSession::handle_mail): New method.
+	(TooManyMembers): New exception.
+	(QuickML::add_member): Check @max_members exceeded?
+	(QuickMLSession::add_member): New method.
+	(QuickMail::body_push): New method.
+	(QuickMail::initialize): Fix @max_length size.
+	(puts_log): Synchronize logging processing using Mutex.
+	(QuickMail::looping): New method.
+	(QuickMLSession::handle_mail): Detect looping mail.
+	(QuickMLSession::cleanup_connection): New method.
+
+2001-11-22  Satoru Takabayashi  <satoru@namazu.org>
+
+	* quickml-ctl: New file.
+
+	* quickml (QuickMail::initialize): Fix @addrexx_regex bug.
+	/([\w_\-]+\@(([\w_\-]+)\.)*([\w_\-]+))/ doesn't match
+	<masui.toshiyuki@ezweb.ne.jp> correctly.
+	(QuickMLServer::be_daemon): New method.
+	(QuickMLServer::write_pidfile): New method.
+	(QuickMLServer::cleanup): New method.
+	(QuickMLServer::start): New method.
+

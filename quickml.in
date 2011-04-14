@@ -1,0 +1,81 @@
+#! %RUBY%
+# -*- mode: ruby -*-
+#
+# quickml - an easy-to-use mailing list server
+#
+# Copyright (C) 2002-2004 Satoru Takabayashi <satoru@namazu.org> 
+#     All rights reserved.
+#     This is free software with ABSOLUTELY NO WARRANTY.
+#
+# You can redistribute it and/or modify it under the terms of 
+# the GNU General Public License version 2.
+#
+
+$KCODE = "e"
+require 'quickml'
+
+def error (msg)
+  STDERR.puts "#{$0}: #{msg}"
+  exit(1)
+end
+
+def show_usage
+  puts "Usage: quickml <data directory> <smtp server> <domain name>"
+end
+
+def check_directory (dir)
+  error("#{dir}: No such directory") unless File.directory?(dir) 
+  error("#{dir}: is not writable")   unless File.writable?(dir) 
+end
+
+def be_daemon
+  exit!(0) if fork
+  Process::setsid
+  exit!(0) if fork
+  Dir::chdir("/")
+  File::umask(022)
+  STDIN.reopen("/dev/null",  "r+")
+  STDOUT.reopen("/dev/null", "r+")
+  STDERR.reopen("/dev/null", "r+")
+end
+
+def touch (filename)
+  File.safe_open(filename, "a").close
+end
+
+def be_secure (config)
+  return unless Process.uid == 0
+  uid = Etc::getpwnam(config.user).uid 
+  gid = Etc::getgrnam(config.group).gid
+  touch(config.pid_file)
+  touch(config.log_file)
+  File.chown(uid, gid, config.data_dir)
+  File.chown(uid, gid, config.pid_file)
+  File.chown(uid, gid, config.log_file)
+  Process.uid  = uid
+  Process.gid  = gid
+  Process.euid = uid
+end
+
+def main (argv)
+  config_file = if argv.length == 1 then 
+		  argv.first 
+		else 
+		  File.join("%SYSCONFDIR%", "quickmlrc")
+		end
+  config = QuickML::Config::load(config_file)
+  check_directory(config.data_dir)
+
+  be_daemon
+  be_secure(config)
+
+  server  = QuickML::Server.new(config)
+  sweeper = QuickML::Sweeper.new(config)
+  trap(:TERM) { server.shutdown; sweeper.shutdown }
+  trap(:INT)  { server.shutdown; sweeper.shutdown }
+  trap(:HUP)  { config.logger.reopen }
+  t = Thread.new { sweeper.start }
+  t.abort_on_exception = true
+  server.start
+end
+main(ARGV)

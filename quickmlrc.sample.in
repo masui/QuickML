@@ -1,0 +1,34 @@
+# -*- mode: ruby -*-
+Config = {
+  :user => "%USER%",
+  :group => "%GROUP%",
+  :port => 25,
+  :bind_address => "0.0.0.0",
+
+  :smtp_host => 'mail.example.net',
+  :smtp_port => 25,
+  :domain => 'example.net',
+  :postmaster => "postmaster@example.net",
+  :info_url => "http://QuickML.com/",
+
+  :data_dir => '%LOCALSTATEDIR%',
+  :pid_file => '%PIDFILE%',
+  :log_file => '%LOGFILE%',
+
+  :verbose_mode => true,
+  :max_members => 100,
+  :max_mail_length => 100 * 1024,
+  :ml_life_time => 86400 * 31,
+  :ml_alert_time => 86400 * 30,
+  :auto_unsubscribe_count => 5,
+
+  :sweep_interval => 3600,
+  :max_threads => 10,
+  :timeout => 120,
+  :use_qmail_verp => false,
+
+  :confirm_ml_creation => false, # for confirming ML creation. (experimental)
+
+  # :message_catalog => nil  # for English messages
+  :message_catalog => '%DATADIR%/messages.ja',
+}

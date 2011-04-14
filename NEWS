@@ -1,0 +1,30 @@
+Overview of Changes in QuickML 0.6 - 2004-02-11
+
+* quickml-analog is now included.
+* Ruby 1.8 is now supported.
+* Per-ML limitation is now supported.
+* Autotoolized.
+* Bugs in Sweeper are fixed.
+
+Overview of Changes in QuickML 0.5 - 2002-03-04
+
+* Some bugs are fixed.
+
+Overview of Changes in QuickML 0.4 - 2002-03-01
+
+* Working with other MTAs is now supported.
+* qmail's verp is now supported.
+* Working as a non-root user is now supported.
+
+Overview of Changes in QuickML 0.3 - 2002-02-19
+
+* Automatic error mail handling is now supported.
+* Gettextized.
+
+Overview of Changes in QuickML 0.2 - 2002-02-12
+
+* Some bugs are fixed.
+
+Overview of Changes in QuickML 0.1 - 2002-02-12
+
+* The initial release.
