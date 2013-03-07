@@ -31,4 +31,14 @@ Config = {
 
   # :message_catalog => nil  # for English messages
   :message_catalog => '%DATADIR%/messages.ja',
+
+  :creator_check => false,
+  :creator_addresses => [
+      '^.+@example\.net$',
+  ],
+
+  :member_check => false,
+  :member_addresses => [
+      '^.+@example\.net$',
+  ],
 }
