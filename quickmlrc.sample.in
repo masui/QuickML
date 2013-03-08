@@ -41,4 +41,9 @@ Config = {
   :member_addresses => [
       '^.+@example\.net$',
   ],
+
+  :sender_check => false,
+  :sender_addresses => [
+      '^.+@example\.net$',
+  ],
 }

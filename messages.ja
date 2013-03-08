@@ -96,6 +96,9 @@ Messages = {
   "Invalid Creator: <%s> by <%s>.\n" =>
   "<%s> メーリングリストは <%s> には作成できません。\n",
 
+  "Invalid Sender: <%s> by <%s>.\n" =>
+  "<%s> メーリングリストに <%s> は投稿できません。\n",
+
   "The following addresses cannot be added because <%s> mailing list can join known members only.\n\n" =>
   "<%s> メーリングリストは参加できるメンバーが制限されているので、以下のアドレスは追加できませんでした。\n\n",
 

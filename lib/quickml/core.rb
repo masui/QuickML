@@ -19,6 +19,7 @@ module QuickML
   class InvalidMLName < QuickMLException; end
   class InvalidCreator < QuickMLException; end
   class InvalidMembers < QuickMLException; end
+  class InvalidSender < QuickMLException; end
 
   # It preserves case information. but it accepts an
   # address case-insensitively for member management.
@@ -98,6 +99,9 @@ module QuickML
       @logger = @config.logger
       @catalog = @config.catalog
 
+      if @config.sender_check
+        raise InvalidSender unless valid_members?(creator, @config.sender_addresses)
+      end
       if newly_created? and @config.creator_check
         raise InvalidCreator unless valid_members?(creator, @config.creator_addresses)
       end
@@ -903,6 +907,23 @@ module QuickML
       @logger.log "Invalid Creator: #{mladdress} by #{@mail.from}"
     end
 
+    def report_invalid_sender (mladdress)
+      header = []
+      subject = Mail.encode_field(_("[QuickML] Error: %s", @mail["Subject"]))
+      header.push(["To",	@mail.from],
+		  ["From",	@config.postmaster],
+		  ["Subject",	subject],
+                  ["Content-type", content_type])
+      body =  _("Invalid Sender: <%s> by <%s>.\n", mladdress, @mail.from)
+      body << generate_footer
+      Mail.send_mail(@config.smtp_host, @config.smtp_port, @logger,
+		     :mail_from => '', 
+		     :recipient => @mail.from,
+		     :header => header,
+		     :body => body)
+      @logger.log "Invalid Sender: #{mladdress} by #{@mail.from}"
+    end
+
     def mail_log
       @logger.vlog "MAIL FROM:<#{@mail.mail_from}>"
       @mail.recipients.each {|recipient|
@@ -1056,6 +1077,8 @@ module QuickML
 	  report_invalid_mladdress(mladdress)
         rescue InvalidCreator
 	  report_invalid_creator(mladdress)
+        rescue InvalidSender
+	  report_invalid_sender(mladdress)
 	end
       end
     end
