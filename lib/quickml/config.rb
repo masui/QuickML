@@ -69,6 +69,13 @@ module QuickML
 			    [ @domain ]
 			  end
 
+      @sender_check = (config[:sender_check] or false)
+      @sender_addresses = if config[:sender_addresses]
+			    config[:sender_addresses]
+			  else
+			    [ @domain ]
+			  end
+
       charset = @catalog.charset if @catalog
       @content_type = "text/plain"
 
