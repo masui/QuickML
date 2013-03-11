@@ -1021,7 +1021,8 @@ module QuickML
       ml.newly_created? or
         ml.active_members.include?(@mail.from) or
         ml.former_members.include?(@mail.from) or
-        sender_knows_an_active_member?(ml)
+        sender_knows_an_active_member?(ml) or
+        @config.sender_check
     end
 
     def confirmation_required? (ml)
