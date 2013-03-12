@@ -99,10 +99,10 @@ module QuickML
       @logger = @config.logger
       @catalog = @config.catalog
 
-      if @config.sender_check
+      if @config.sender_check and !creator.nil?
         raise InvalidSender unless valid_members?(creator, @config.sender_addresses)
       end
-      if newly_created? and @config.creator_check
+      if newly_created? and @config.creator_check and !creator.nil?
         raise InvalidCreator unless valid_members?(creator, @config.creator_addresses)
       end
 
