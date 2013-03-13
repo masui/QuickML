@@ -17,6 +17,9 @@ module QuickML
   class TooLargeMail < QuickMLException; end
   class TooManyMembers < QuickMLException; end
   class InvalidMLName < QuickMLException; end
+  class InvalidCreator < QuickMLException; end
+  class InvalidMembers < QuickMLException; end
+  class InvalidSender < QuickMLException; end
 
   # It preserves case information. but it accepts an
   # address case-insensitively for member management.
@@ -96,6 +99,13 @@ module QuickML
       @logger = @config.logger
       @catalog = @config.catalog
 
+      if @config.sender_check and !creator.nil?
+        raise InvalidSender unless valid_members?(creator, @config.sender_addresses)
+      end
+      if newly_created? and @config.creator_check and !creator.nil?
+        raise InvalidCreator unless valid_members?(creator, @config.creator_addresses)
+      end
+
       init_ml_config
       init_members
       init_count
@@ -114,6 +124,13 @@ module QuickML
     attr_reader :charset
     attr_reader :max_members
 
+    def valid_members? (address, pat)
+      pat.each do |entry|
+	return true if /#{entry}/i =~ address
+      end
+      false
+    end
+    
     def self.valid_name? (name)
       /^([0-9a-zA-Z_.-]+)(@[0-9a-zA-Z_.-]+)?$/ =~ name
     end
@@ -607,6 +624,7 @@ module QuickML
         begin
           add_member(address)
         rescue TooManyMembers
+        rescue InvalidMembers
         end
       }
       submit(mail)
@@ -636,6 +654,9 @@ module QuickML
     end
 
     def add_member (address)
+      if @config.member_check
+        raise InvalidMembers unless valid_members?(address, @config.member_addresses)
+      end
       if exclude?(address)
 	@logger.vlog "Excluded: #{address}"
 	return
@@ -827,6 +848,29 @@ module QuickML
       @logger.log "[#{ml.name}]: Too Many Members: #{address}"
     end
 
+    def report_invalid_members (ml, invalid_members)
+      header = []
+      subject = Mail.encode_field(_("[QuickML] Error: %s", @mail["Subject"]))
+      header.push(["To",	@mail.from],
+		  ["From",	ml.address],
+		  ["Subject",	subject],
+                  ["Content-type", content_type])
+
+      body =  _("The following addresses cannot be added because <%s> mailing list can join known members only.\n\n",
+		ml.address)
+      invalid_members.each {|address|
+        body << sprintf("<%s>\n", address)
+      }
+
+      body << generate_footer
+      Mail.send_mail(@config.smtp_host, @config.smtp_port, @logger,
+		     :mail_from => '', 
+		     :recipient => @mail.from,
+		     :header => header,
+		     :body => body)
+      @logger.log "[#{ml.name}]: Invalid Members by #{@mail.from}"
+    end
+
     def report_invalid_mladdress (mladdress)
       header = []
       subject = Mail.encode_field(_("[QuickML] Error: %s", @mail["Subject"]))
@@ -844,6 +888,40 @@ module QuickML
 		     :header => header,
 		     :body => body)
       @logger.log "Invalid ML Address: #{mladdress}"
+    end
+
+    def report_invalid_creator (mladdress)
+      header = []
+      subject = Mail.encode_field(_("[QuickML] Error: %s", @mail["Subject"]))
+      header.push(["To",	@mail.from],
+		  ["From",	@config.postmaster],
+		  ["Subject",	subject],
+                  ["Content-type", content_type])
+      body =  _("Invalid Creator: <%s> by <%s>.\n", mladdress, @mail.from)
+      body << generate_footer
+      Mail.send_mail(@config.smtp_host, @config.smtp_port, @logger,
+		     :mail_from => '', 
+		     :recipient => @mail.from,
+		     :header => header,
+		     :body => body)
+      @logger.log "Invalid Creator: #{mladdress} by #{@mail.from}"
+    end
+
+    def report_invalid_sender (mladdress)
+      header = []
+      subject = Mail.encode_field(_("[QuickML] Error: %s", @mail["Subject"]))
+      header.push(["To",	@mail.from],
+		  ["From",	@config.postmaster],
+		  ["Subject",	subject],
+                  ["Content-type", content_type])
+      body =  _("Invalid Sender: <%s> by <%s>.\n", mladdress, @mail.from)
+      body << generate_footer
+      Mail.send_mail(@config.smtp_host, @config.smtp_port, @logger,
+		     :mail_from => '', 
+		     :recipient => @mail.from,
+		     :header => header,
+		     :body => body)
+      @logger.log "Invalid Sender: #{mladdress} by #{@mail.from}"
     end
 
     def mail_log
@@ -868,6 +946,8 @@ module QuickML
 	ml.add_member(address)
       rescue TooManyMembers
         @unadded_addresses.push(address)
+      rescue InvalidMembers
+        @invalid_members.push(address)
       end
     end
 
@@ -879,6 +959,7 @@ module QuickML
 
     def submit_article (ml)
       @unadded_addresses = []
+      @invalid_members = []
       if ml_address_in_to?(ml)
         add_member(ml, @mail.from)
         @mail.collect_cc.each {|address| 
@@ -887,6 +968,9 @@ module QuickML
       end
       unless @unadded_addresses.empty?
         report_too_many_members(ml, @unadded_addresses)
+      end
+      unless @invalid_members.empty?
+        report_invalid_members(ml, @invalid_members)
       end
       ml.submit(@mail)
     end
@@ -937,7 +1021,8 @@ module QuickML
       ml.newly_created? or
         ml.active_members.include?(@mail.from) or
         ml.former_members.include?(@mail.from) or
-        sender_knows_an_active_member?(ml)
+        sender_knows_an_active_member?(ml) or
+        @config.sender_check
     end
 
     def confirmation_required? (ml)
@@ -991,6 +1076,10 @@ module QuickML
 	  }
 	rescue InvalidMLName
 	  report_invalid_mladdress(mladdress)
+        rescue InvalidCreator
+	  report_invalid_creator(mladdress)
+        rescue InvalidSender
+	  report_invalid_sender(mladdress)
 	end
       end
     end
